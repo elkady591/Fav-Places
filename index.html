@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="theme-color" content="#14549F">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="FAV Places">
+<title>FAV Places</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Reem+Kufi:wght@500;700&display=swap">
+<style>
+/* Layout: one narrow column you can use with a thumb. Command box on top,
+   then the saved places as blue street-sign plates you tap to navigate. */
+:root {
+  --bg: #EDF0F3;
+  --surface: #FFFFFF;
+  --ink: #13202C;
+  --muted: #586673;
+  --line: #CDD5DC;
+  --sign: #14549F;
+  --sign-ink: #FFFFFF;
+  --sign-sub: #CFE0F5;
+  --sign-edge: #E6EFFA;
+  --sign-soft: #E1EBF7;
+  --pin: #E9A400;
+  --pin-ink: #2A1D00;
+  --danger: #B3261E;
+  --font-display: "Reem Kufi", "Noto Kufi Arabic", "Segoe UI", Tahoma, sans-serif;
+  --font-body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0E151C;
+    --surface: #17212B;
+    --ink: #E8EEF3;
+    --muted: #94A2AF;
+    --line: #2C3945;
+    --sign: #1B5FB3;
+    --sign-ink: #FFFFFF;
+    --sign-sub: #C7DCF5;
+    --sign-edge: #D5E5F8;
+    --sign-soft: #172A3F;
+    --pin: #F2B632;
+    --pin-ink: #231800;
+    --danger: #F2867E;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0E151C;
+  --surface: #17212B;
+  --ink: #E8EEF3;
+  --muted: #94A2AF;
+  --line: #2C3945;
+  --sign: #1B5FB3;
+  --sign-ink: #FFFFFF;
+  --sign-sub: #C7DCF5;
+  --sign-edge: #D5E5F8;
+  --sign-soft: #172A3F;
+  --pin: #F2B632;
+  --pin-ink: #231800;
+  --danger: #F2867E;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  margin: 0;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.6;
+}
+.app {
+  max-width: 34rem;
+  margin-inline: auto;
+  padding-inline: 16px;
+  padding-block: 20px 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+h1, h2, h3, p, ul, ol { margin: 0; }
+ul, ol { padding: 0; list-style: none; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--pin); outline-offset: 2px; }
+
+/* Header */
+.top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.top-end { display: flex; align-items: center; gap: 12px; }
+.lang {
+  flex: none; width: 44px; height: 44px;
+  background: var(--surface); color: var(--ink);
+  border: 1.5px solid var(--line); border-radius: var(--radius);
+  font-weight: 700; font-size: 1rem; line-height: 1; cursor: pointer;
+}
+html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
+.top h1 { font-family: var(--font-display); font-weight: 700; font-size: 2rem; line-height: 1.2; }
+.count { color: var(--muted); font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
+
+/* Command box */
+.go { display: flex; flex-direction: column; gap: 8px; }
+.lbl { font-weight: 600; font-size: 1.0625rem; }
+.field { position: relative; display: flex; }
+.field input {
+  flex: 1; min-width: 0;
+  height: 56px;
+  padding-inline: 16px 100px;
+  font-size: 1.125rem;
+  background: var(--surface);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+}
+.field input:focus { outline: none; border-color: var(--sign); }
+.field input::placeholder { color: var(--muted); opacity: 1; }
+.clear {
+  position: absolute; inset-inline-end: 52px; top: 6px;
+  width: 44px; height: 44px;
+  background: none; border: 0; border-radius: 8px;
+  font-size: 1.5rem; line-height: 1; color: var(--muted); cursor: pointer;
+}
+.mic {
+  position: absolute; inset-inline-end: 6px; top: 6px;
+  width: 44px; height: 44px; display: grid; place-items: center;
+  background: var(--sign-soft); color: var(--ink);
+  border: 0; border-radius: 8px; cursor: pointer;
+}
+.mic.on { background: var(--pin); color: var(--pin-ink); }
+.nfield { position: relative; display: flex; }
+.nfield .text-input { padding-inline-end: 58px; }
+.nfield .mic { top: 4px; }
+.tools { display: flex; flex-wrap: wrap; gap: 8px; }
+.hint { color: var(--muted); font-size: 0.875rem; }
+.answer { display: flex; flex-direction: column; gap: 8px; }
+.answer-note { font-size: 0.9375rem; }
+
+/* Buttons */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-height: 52px; padding: 10px 18px;
+  border: 0; border-radius: var(--radius);
+  font-weight: 600; font-size: 1.0625rem; text-decoration: none; cursor: pointer;
+  text-align: center;
+}
+.btn svg { flex: none; }
+.btn.pin { background: var(--pin); color: var(--pin-ink); }
+.btn.sign { background: var(--sign); color: var(--sign-ink); }
+.btn.ghost { background: transparent; color: var(--ink); border: 2px solid var(--line); }
+.btn.small { min-height: 44px; font-size: 0.9375rem; padding: 8px 14px; }
+.btn.danger { background: transparent; color: var(--danger); border: 2px solid var(--danger); }
+.btn[disabled] { opacity: 0.6; cursor: default; }
+
+/* Save panel */
+.saver {
+  background: var(--surface);
+  border: 2px solid var(--pin);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.saver h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.25rem; line-height: 1.3; }
+.step { display: flex; flex-direction: column; gap: 12px; }
+.steps { display: flex; flex-direction: column; gap: 10px; counter-reset: s; }
+.steps li { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; counter-increment: s; }
+.steps li::before {
+  content: counter(s);
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--sign-soft); color: var(--ink);
+  display: grid; place-items: center;
+  font-weight: 600; font-size: 0.875rem; font-variant-numeric: tabular-nums;
+}
+.steps li > div { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.text-input {
+  width: 100%; min-width: 0; height: 52px; padding-inline: 14px;
+  font-size: 1.0625rem;
+  background: var(--bg);
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+}
+.text-input:focus { outline: none; border-color: var(--sign); }
+.text-input::placeholder { color: var(--muted); opacity: 1; }
+.row-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.row-btns .btn { flex: 1 1 8rem; }
+.note { color: var(--muted); font-size: 0.875rem; }
+.err { color: var(--danger); font-size: 0.9375rem; font-weight: 500; }
+.got {
+  background: var(--sign-soft);
+  border-radius: 8px; padding: 10px 12px;
+  font-size: 0.9375rem; overflow-wrap: anywhere;
+}
+.got bdi { font-variant-numeric: tabular-nums; font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  min-height: 40px; padding: 6px 14px;
+  background: transparent; border: 1.5px solid var(--line); border-radius: 999px;
+  font-size: 0.9375rem; cursor: pointer;
+}
+.linklike { background: none; border: 0; padding: 0; color: var(--muted); text-decoration: underline; cursor: pointer; font-size: 0.875rem; align-self: flex-start; }
+
+/* Places list: street-sign plates */
+.list-wrap { display: flex; flex-direction: column; gap: 10px; }
+.list-wrap h2 { font-size: 0.875rem; font-weight: 600; color: var(--muted); }
+#list { display: flex; flex-direction: column; gap: 10px; }
+.row { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
+.plate {
+  flex: 1; min-width: 0;
+  display: flex; align-items: center; gap: 12px;
+  background: var(--sign); color: var(--sign-ink);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  text-decoration: none;
+  box-shadow: inset 0 0 0 4px var(--sign), inset 0 0 0 5.5px var(--sign-edge);
+}
+.row.best .plate { box-shadow: inset 0 0 0 4px var(--sign), inset 0 0 0 5.5px var(--sign-edge), 0 0 0 3px var(--pin); }
+.plate-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.plate-name { font-family: var(--font-display); font-weight: 700; font-size: 1.375rem; line-height: 1.35; overflow-wrap: anywhere; }
+.plate-sub { color: var(--sign-sub); font-size: 0.8125rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.plate-go { display: flex; align-items: center; gap: 6px; font-size: 0.875rem; font-weight: 500; flex: none; }
+.more {
+  flex: none; width: 44px;
+  background: var(--surface); color: var(--muted);
+  border: 1.5px solid var(--line); border-radius: var(--radius);
+  font-size: 1.25rem; line-height: 1; cursor: pointer;
+}
+.edit {
+  flex-basis: 100%;
+  background: var(--surface);
+  border: 1.5px solid var(--line); border-radius: var(--radius);
+  padding: 12px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.edit label { font-size: 0.875rem; font-weight: 600; }
+
+.empty {
+  border: 2px dashed var(--line); border-radius: var(--radius);
+  padding: 20px 16px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.empty strong { font-family: var(--font-display); font-size: 1.125rem; font-weight: 700; }
+.empty p { color: var(--muted); font-size: 0.9375rem; }
+
+.status { color: var(--muted); font-size: 0.8125rem; }
+
+.toast {
+  position: fixed; inset-inline: 16px; bottom: 0;
+  margin-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  max-width: 32rem; margin-inline: auto;
+  background: var(--ink); color: var(--bg);
+  border-radius: var(--radius); padding: 12px 16px;
+  font-weight: 500; text-align: center;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .btn, .plate, .more, .chip { transition: transform 0.08s ease; }
+  .btn:active, .plate:active, .more:active, .chip:active { transform: scale(0.985); }
+}
+</style>
+</head>
+<body>
+
+<main class="app">
+  <header class="top">
+    <h1 dir="ltr">FAV Places</h1>
+    <div class="top-end">
+      <p id="count" class="count"></p>
+      <button id="langBtn" class="lang" type="button"></button>
+    </div>
+  </header>
+
+  <form id="goForm" class="go" autocomplete="off">
+    <label for="q" class="lbl">عاوز تروح فين؟</label>
+    <div class="field">
+      <input id="q" type="text" enterkeyhint="go" placeholder="مثلاً: البيت">
+      <button id="clearQ" class="clear" type="button" aria-label="امسح الكتابة" hidden>×</button>
+      <button id="micGo" class="mic" type="button" aria-label="قول اسم المكان" hidden><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/></svg></button>
+    </div>
+    <div id="answer" class="answer" hidden></div>
+    <p class="hint">دوس على الميكروفون وقول اسم المكان، أو اكتبه. ولتسجيل مكانك قول «سجّل ده».</p>
+  </form>
+
+  <button id="saveHere" class="btn pin" type="button">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>
+    سجّل المكان اللي أنا فيه
+  </button>
+
+  <section id="saver" class="saver" aria-labelledby="saverTitle" hidden>
+    <h2 id="saverTitle">تسجيل مكان جديد</h2>
+
+    <div id="stepLocating" class="step" hidden>
+      <p>بحدّد مكانك…</p>
+    </div>
+
+    <div id="stepPaste" class="step" hidden>
+      <p>ماقدرتش أحدّد مكانك تلقائي. اسمح للصفحة بالموقع من المتصفح وجرّب تاني، أو هات المكان من جوجل مابس:</p>
+      <button id="retryGeo" class="linklike" type="button">حدّد مكاني تلقائي تاني</button>
+      <ol class="steps">
+        <li><div>
+          <a id="openMaps" class="btn sign small" href="https://www.google.com/maps/@?api=1&amp;map_action=map" target="_blank" rel="noopener">افتح جوجل مابس على مكاني</a>
+        </div></li>
+        <li><div>
+          <p>دوس مطوّل على النقطة الزرقا لحد ما يظهر دبوس، وبعدين دوس على الإحداثيات عشان تتنسخ. أو دوس «مشاركة» ثم «نسخ».</p>
+        </div></li>
+        <li><div>
+          <label for="loc">ارجع هنا والصق اللي نسخته</label>
+          <input id="loc" class="text-input" type="text" dir="auto" placeholder="الصق الإحداثيات أو اللينك">
+          <p id="locErr" class="err" hidden></p>
+          <div class="row-btns">
+            <button id="locNext" class="btn pin small" type="button">كمّل</button>
+            <button class="btn ghost small" type="button" data-cancel>إلغاء</button>
+          </div>
+          <p class="note">ينفع كمان تكتب عنوان أو اسم مكان بدل الإحداثيات.</p>
+        </div></li>
+      </ol>
+    </div>
+
+    <div id="stepName" class="step" hidden>
+      <p id="got" class="got"></p>
+      <label for="pname" class="lbl">تسجّله بإيه؟</label>
+      <div class="nfield">
+        <input id="pname" class="text-input" type="text" maxlength="60" enterkeyhint="done" placeholder="اسم المكان">
+        <button id="micName" class="mic" type="button" aria-label="قول اسم المكان" hidden><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/></svg></button>
+      </div>
+      <div id="chips" class="chips" aria-label="أسماء جاهزة"></div>
+      <p id="dupe" class="note" hidden></p>
+      <p id="nameErr" class="err" hidden></p>
+      <div class="row-btns">
+        <button id="doSave" class="btn pin" type="button">سجّل</button>
+        <button class="btn ghost" type="button" data-cancel>إلغاء</button>
+      </div>
+      <button id="changeLoc" class="linklike" type="button">غيّر المكان</button>
+    </div>
+  </section>
+
+  <section class="list-wrap" aria-labelledby="listTitle">
+    <h2 id="listTitle">الأماكن المسجّلة</h2>
+    <ul id="list"></ul>
+    <div id="empty" class="empty">
+      <strong id="emptyTitle">بنجيب أماكنك المسجّلة…</strong>
+      <p id="emptyBody">كل مكان تسجّله هيظهر هنا كلافتة، ودوسة واحدة عليها تفتح جوجل مابس وتوجّهك.</p>
+    </div>
+  </section>
+
+  <p id="status" class="status"></p>
+  <div class="tools">
+    <button id="exportBtn" class="btn ghost small" type="button">حمّل نسخة احتياطية</button>
+    <button id="importBtn" class="btn ghost small" type="button">استرجع نسخة</button>
+    <input id="importFile" type="file" accept="application/json,.json" hidden>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</main>
+
+<script>
+/* ---------- language: English by default, the Arabic strings are the keys ---------- */
+var EN = {
+  "عاوز تروح فين؟": "Where to?",
+  "مثلاً: البيت": "e.g. Home",
+  "امسح الكتابة": "Clear text",
+  "قول اسم المكان": "Say the place name",
+  "دوس على الميكروفون وقول اسم المكان، أو اكتبه. ولتسجيل مكانك قول «سجّل ده».": "Tap the mic and say the place name, or type it. To save where you are, say “save this”.",
+  "تسجيل مكان جديد": "Save a new place",
+  "بحدّد مكانك…": "Finding your location…",
+  "ماقدرتش أحدّد مكانك تلقائي. اسمح للصفحة بالموقع من المتصفح وجرّب تاني، أو هات المكان من جوجل مابس:": "Couldn't get your location automatically. Allow location for this page in the browser and try again, or get the place from Google Maps:",
+  "حدّد مكاني تلقائي تاني": "Try finding my location again",
+  "افتح جوجل مابس على مكاني": "Open Google Maps at my location",
+  "دوس مطوّل على النقطة الزرقا لحد ما يظهر دبوس، وبعدين دوس على الإحداثيات عشان تتنسخ. أو دوس «مشاركة» ثم «نسخ».": "Long-press the blue dot until a pin appears, then tap the coordinates to copy them. Or tap Share, then Copy.",
+  "ارجع هنا والصق اللي نسخته": "Come back here and paste what you copied",
+  "الصق الإحداثيات أو اللينك": "Paste coordinates or link",
+  "كمّل": "Continue",
+  "إلغاء": "Cancel",
+  "ينفع كمان تكتب عنوان أو اسم مكان بدل الإحداثيات.": "You can also type an address or place name instead of coordinates.",
+  "تسجّله بإيه؟": "Save it as?",
+  "اسم المكان": "Place name",
+  "أسماء جاهزة": "Suggested names",
+  "غيّر المكان": "Change location",
+  "حمّل نسخة احتياطية": "Download backup",
+  "استرجع نسخة": "Restore backup",
+  "المساحة اتملت. امسح أماكن قديمة وجرّب تاني.": "Storage is full. Delete old places and try again.",
+  "ماتسجّلش. جرّب تاني.": "Couldn't save. Try again.",
+  "لينك جوجل مابس": "Google Maps link",
+  "وجّهني": "Go",
+  "احفظ الاسم": "Save name",
+  "الاسم اتغيّر": "Name changed",
+  "أيوه، امسحه": "Yes, delete",
+  "لأ، سيبه": "No, keep it",
+  "امسح المكان": "Delete place",
+  "سجّل المكان اللي أنا فيه": "Save where I am",
+  "نتيجة البحث": "Search results",
+  "الأماكن المسجّلة": "Saved places",
+  "بنجيب أماكنك المسجّلة…": "Loading your saved places…",
+  "كل مكان تسجّله هيظهر هنا كلافتة، ودوسة واحدة عليها تفتح جوجل مابس وتوجّهك.": "Every place you save shows up here as a sign. One tap opens Google Maps and starts navigation.",
+  "لسه مفيش أماكن مسجّلة": "No saved places yet",
+  "أول ما توصل مكان عاوز ترجعله، دوس «سجّل المكان اللي أنا فيه» وسمّيه. بعدها هتلاقيه هنا كلافتة، ودوسة واحدة عليها تفتح جوجل مابس وتوجّهك.": "When you reach a place you'll want to come back to, tap “Save where I am” and name it. It will show up here as a sign, and one tap opens Google Maps and starts navigation.",
+  "أماكنك محفوظة على الجهاز ده بس. خُد نسخة احتياطية كل فترة.": "Your places are stored on this device only. Take a backup now and then.",
+  "المتصفح مانع الحفظ، فالأماكن هتفضل لحد ما تقفل الصفحة بس.": "The browser is blocking storage, so places last only until you close the page.",
+  "اتحدّد مكانك: ": "Your location: ",
+  "الإحداثيات: ": "Coordinates: ",
+  "اتاخد لينك جوجل مابس. لما تدوس على المكان هيفتح في جوجل مابس وتدوس «الاتجاهات». لو عاوزه يبدأ التوجيه على طول، الصق الإحداثيات بدل اللينك.": "Got a Google Maps link. Tapping the place opens it in Google Maps, then you tap Directions. To start navigation right away, paste the coordinates instead of the link.",
+  "تسجّله بإيه؟ قول الاسم.": "Save it as? Say the name.",
+  "الصق الإحداثيات أو لينك المكان الأول.": "Paste the coordinates or the place link first.",
+  "اللينك ده مش من جوجل مابس. انسخ الإحداثيات أو لينك المشاركة من جوجل مابس.": "That link isn't from Google Maps. Copy the coordinates or the share link from Google Maps.",
+  "سجّل": "Save",
+  "اكتب اسم للمكان.": "Type a name for the place.",
+  "اسمح للصفحة بالميكروفون من إعدادات المتصفح.": "Allow the microphone for this page in the browser settings.",
+  "ماسمعتش حاجة. جرّب تاني.": "Didn't hear anything. Try again.",
+  "الميكروفون ماشتغلش. اكتب الاسم بدل ما تقوله.": "The mic didn't work. Type the name instead.",
+  "مفيش أماكن مسجّلة لسه.": "No saved places yet.",
+  "الملف مفيهوش أماكن.": "The file has no places.",
+  "الملف ده مش نسخة احتياطية سليمة.": "That file isn't a valid backup.",
+  "وجّهني على {0}": "Navigate to {0}",
+  "تعديل {0}": "Edit {0}",
+  "اتمسح «{0}»": "Deleted “{0}”",
+  "سجّل مكاني باسم «{0}»": "Save my location as “{0}”",
+  "مفيش مكان مسجّل بالاسم «{0}».": "No saved place named “{0}”.",
+  "دوّر على «{0}» في جوجل مابس": "Search “{0}” in Google Maps",
+  "سجّل مكاني الحالي باسم «{0}»": "Save my current location as “{0}”",
+  "العنوان: ": "Address: ",
+  "فيه مكان مسجّل باسم «{0}». التسجيل هيحدّث موقعه للمكان الجديد.": "There’s already a place named “{0}”. Saving will move it to the new location.",
+  "حدّث «{0}»": "Update “{0}”",
+  "اتسجّل «{0}»": "Saved “{0}”",
+  "رايحين «{0}»…": "Heading to “{0}”…",
+  "اترجّع: {0}": "Restored: {0}"
+};
+var LANG_KEY = "fav-places.lang";
+var LANG = "en";
+try { if (localStorage.getItem(LANG_KEY) === "ar") LANG = "ar"; } catch (e) {}
+function L(s) { return LANG === "ar" || EN[s] === undefined ? s : EN[s]; }
+function T(s) { var a = arguments; return L(s).replace(/\{(\d)\}/g, function (m, i) { return a[+i + 1]; }); }
+
+/* The page is written in Arabic. Remember every Arabic text, placeholder and
+   label once, so either language can be put back into the same spot. */
+var statics = [];
+(function () {
+  var w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT), n;
+  while ((n = w.nextNode())) {
+    if (n.parentNode.nodeName === "SCRIPT" || n.parentNode.nodeName === "STYLE") continue;
+    if (/[\u0600-\u06FF]/.test(n.nodeValue)) statics.push({ node: n, ar: n.nodeValue.trim() });
+  }
+  Array.prototype.forEach.call(document.querySelectorAll("[placeholder],[aria-label]"), function (e) {
+    ["placeholder", "aria-label"].forEach(function (at) {
+      if (e.hasAttribute(at)) statics.push({ el: e, attr: at, ar: e.getAttribute(at) });
+    });
+  });
+})();
+function applyStatic() {
+  document.documentElement.lang = LANG;
+  document.documentElement.dir = LANG === "ar" ? "rtl" : "ltr";
+  statics.forEach(function (s) {
+    if (s.node) s.node.nodeValue = L(s.ar); else s.el.setAttribute(s.attr, L(s.ar));
+  });
+  var b = document.getElementById("langBtn");
+  b.textContent = LANG === "ar" ? "EN" : "ع";
+  b.setAttribute("aria-label", LANG === "ar" ? "English" : "العربية");
+}
+applyStatic();
+
+/* ---------- text helpers ---------- */
+function norm(s) {
+  return String(s || "").toLowerCase()
+    .replace(/[ً-ٰٟـ]/g, "")
+    .replace(/[أإآٱ]/g, "ا").replace(/ى/g, "ي").replace(/ة/g, "ه")
+    .replace(/ؤ/g, "و").replace(/ئ/g, "ي")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ").trim();
+}
+function stem(t) { return t === "the" ? "" : t.replace(/^(?:وال|بال|لل|ال)(?=.{2,})/, ""); }
+function toLatinDigits(s) {
+  return String(s)
+    .replace(/[٠-٩]/g, function (d) { return "٠١٢٣٤٥٦٧٨٩".indexOf(d); })
+    .replace(/[۰-۹]/g, function (d) { return "۰۱۲۳۴۵۶۷۸۹".indexOf(d); })
+    .replace(/٫/g, ".").replace(/،/g, ",");
+}
+
+var SAVE_WORDS = new Set(["سجل", "سجلي", "احفظ", "حفظ", "خزن", "save"]);
+var SAVE_FILL = new Set(["ده", "دا", "دي", "المكان", "مكاني", "هنا", "الحته", "باسم", "ب", "اللي", "انا", "فيه", "this", "place", "here", "as"]);
+var GO_WORDS = new Set(["عاوز", "عايز", "عاوزه", "عايزه", "اروح", "نروح", "روح", "اطلع", "وديني", "خدني", "وصلني", "وجهني", "علي", "الي", "عند", "يلا", "انا", "ممكن", "go", "to", "take", "me", "navigate", "i", "want", "wanna", "lets", "drive"]);
+
+/* "عاوز اروح البيت" -> go to "البيت"; "سجل ده الشغل" -> save, name "الشغل" */
+function parseCommand(raw) {
+  var words = String(raw).trim().split(/\s+/).map(function (w) { return { w: w, n: norm(w) }; })
+    .filter(function (x) { return x.n; });
+  if (!words.length) return { save: false, text: "", display: "" };
+  if (SAVE_WORDS.has(words[0].n)) {
+    var keep = words.filter(function (x) { return !SAVE_WORDS.has(x.n) && !SAVE_FILL.has(x.n); });
+    return { save: true, name: keep.map(function (x) { return x.w; }).join(" ") };
+  }
+  var i = 0;
+  while (i < words.length - 1 && GO_WORDS.has(words[i].n)) i++;
+  var rest = words.slice(i);
+  return {
+    save: false,
+    text: rest.map(function (x) { return x.n; }).join(" "),
+    display: rest.map(function (x) { return x.w; }).join(" ")
+  };
+}
+
+/* ---------- location parsing ---------- */
+function validLL(lat, lng) {
+  return isFinite(lat) && isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180;
+}
+function isMapsHost(u) {
+  try {
+    var url = new URL(u);
+    if (url.protocol !== "https:" && url.protocol !== "http:") return false;
+    var h = url.hostname.toLowerCase();
+    return /(^|\.)google\.[a-z.]{2,6}$/.test(h) || h === "maps.app.goo.gl" || h === "goo.gl" ||
+      h === "g.co" || h === "maps.apple.com";
+  } catch (e) { return false; }
+}
+/* Returns {kind:"coords",lat,lng} | {kind:"link",link} | {kind:"query",query} | {kind:"error"} | null */
+function parseLocation(raw) {
+  var s = toLatinDigits(String(raw || "").trim());
+  if (!s) return null;
+  var N = "(-?\\d{1,3}(?:\\.\\d+)?)";
+  var urlM = s.match(/https?:\/\/[^\s]+/i);
+  if (urlM) {
+    var u = urlM[0].replace(/[)\].,؛]+$/, "");
+    var m = u.match(new RegExp("!3d" + N + "!4d" + N)) ||
+      u.match(new RegExp("[?&](?:q|query|ll|destination|daddr|center|sll)=(?:loc:)?" + N + "(?:,|%2C)\\+?" + N, "i")) ||
+      u.match(new RegExp("/(?:search|place)/" + N + ",\\+?" + N)) ||
+      u.match(new RegExp("@" + N + "," + N));
+    if (m && validLL(+m[1], +m[2])) return { kind: "coords", lat: +m[1], lng: +m[2] };
+    if (isMapsHost(u)) return { kind: "link", link: u };
+    return { kind: "error" };
+  }
+  var dms = [], re = /(\d{1,3})\s*°\s*(\d{1,2})\s*['′]\s*(\d{1,2}(?:\.\d+)?)\s*(?:"|″|'')?\s*([NSEW])/gi, d;
+  while ((d = re.exec(s))) {
+    var v = +d[1] + (+d[2]) / 60 + (+d[3]) / 3600;
+    var hemi = d[4].toUpperCase();
+    if (hemi === "S" || hemi === "W") v = -v;
+    dms.push({ v: v, lat: hemi === "N" || hemi === "S" });
+  }
+  if (dms.length === 2 && dms[0].lat !== dms[1].lat) {
+    var la = dms[0].lat ? dms[0].v : dms[1].v, lo = dms[0].lat ? dms[1].v : dms[0].v;
+    if (validLL(la, lo)) return { kind: "coords", lat: la, lng: lo };
+  }
+  var c = s.match(new RegExp("^\\(?\\s*" + N + "\\s*[,\\s]\\s*" + N + "\\s*\\)?$")) ||
+    s.match(/(-?\d{1,2}\.\d{3,})\s*,\s*(-?\d{1,3}\.\d{3,})/);
+  if (c && validLL(+c[1], +c[2])) return { kind: "coords", lat: +c[1], lng: +c[2] };
+  if (s.length >= 3) return { kind: "query", query: s.slice(0, 200) };
+  return null;
+}
+
+function fmtLL(n) { return Number(n).toFixed(5); }
+function dirUrl(p) {
+  var base = "https://www.google.com/maps/dir/?api=1&travelmode=driving&dir_action=navigate&destination=";
+  if (typeof p.lat === "number" && typeof p.lng === "number") return base + p.lat + "," + p.lng;
+  if (p.link && isMapsHost(p.link)) return p.link;
+  if (p.query) return base + encodeURIComponent(p.query);
+  return "https://www.google.com/maps";
+}
+function searchUrl(text) {
+  return "https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=" + encodeURIComponent(text);
+}
+function countLabel(n) {
+  if (!n) return "";
+  if (LANG !== "ar") return n === 1 ? "1 place" : n + " places";
+  if (n === 1) return "مكان واحد";
+  if (n === 2) return "مكانين";
+  if (n <= 10) return n + " أماكن";
+  return n + " مكان";
+}
+
+/* ---------- state ---------- */
+var places = [];
+var mode = "loading"; // loading | account | device | memory
+var editingId = null, confirmDeleteId = null;
+var draft = null;      // {loc, name} while saving a place
+var geoBlocked = false;
+var busy = false;
+var LS_KEY = "my-places.v1";
+
+var $ = function (id) { return document.getElementById(id); };
+var qEl = $("q"), listEl = $("list"), emptyEl = $("empty"), answerEl = $("answer");
+var saverEl = $("saver"), toastEl = $("toast");
+
+function el(tag, cls, text) {
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+var ARROW = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H5"/><path d="M11 6l-6 6 6 6"/></svg>';
+
+var toastTimer = 0;
+function toast(msg) {
+  toastEl.textContent = msg;
+  toastEl.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function () { toastEl.hidden = true; }, 3200);
+}
+
+function sorted(arr) {
+  return arr.slice().sort(function (a, b) {
+    return (b.usedAt || b.createdAt || 0) - (a.usedAt || a.createdAt || 0);
+  });
+}
+function rank(text) { return rankScored(text).map(function (x) { return x.p; }); }
+function rankScored(text) {
+  var qt = text.split(" ").map(stem).filter(Boolean);
+  var qs = qt.join(" ");
+  if (!qs) return [];
+  return places.map(function (p) {
+    var nt = norm(p.name).split(" ").map(stem).filter(Boolean);
+    var ns = nt.join(" "), s = 0;
+    if (ns === qs) s = 100;
+    else if (ns.indexOf(qs) === 0) s = 85;
+    else if (ns.indexOf(qs) > -1 || (ns.length > 1 && qs.indexOf(ns) > -1)) s = 70;
+    else {
+      var hit = qt.filter(function (t) {
+        return nt.some(function (n) {
+          return n.indexOf(t) === 0 || (t.length > 2 && n.length > 2 && t.indexOf(n) === 0);
+        });
+      }).length;
+      if (hit) s = 60 * hit / qt.length;
+    }
+    return { p: p, s: s };
+  }).filter(function (x) { return x.s > 0; }).sort(function (a, b) {
+    return b.s - a.s || (b.p.usedAt || 0) - (a.p.usedAt || 0);
+  });
+}
+
+/* ---------- storage ---------- */
+function readLocal() {
+  try {
+    var v = JSON.parse(localStorage.getItem(LS_KEY) || "[]");
+    return Array.isArray(v) ? v.filter(function (p) { return p && p.id && p.name; }) : [];
+  } catch (e) { return null; }
+}
+function writeLocal() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(places)); return true; }
+  catch (e) { return false; }
+}
+function useDevice() {
+  var saved = readLocal();
+  if (saved === null) { mode = "memory"; places = []; }
+  else { mode = "device"; places = saved; }
+  render();
+}
+function writeError(e) {
+  var code = e && e.code;
+  if (code === "quota_exceeded") toast(L("المساحة اتملت. امسح أماكن قديمة وجرّب تاني."));
+  else toast(L("ماتسجّلش. جرّب تاني."));
+}
+async function putPlace(data, id) {
+  if (id) {
+    places = places.map(function (p) { return p.id === id ? Object.assign({ id: id }, data) : p; });
+  } else {
+    places = places.concat([Object.assign({ id: "l" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6) }, data)]);
+  }
+  if (mode === "device" && !writeLocal()) mode = "memory";
+  render();
+}
+async function patchPlace(id, patch) {
+  places = places.map(function (p) { return p.id === id ? Object.assign({}, p, patch) : p; });
+  if (mode === "device" && !writeLocal()) mode = "memory";
+  render();
+}
+async function removePlace(id) {
+  places = places.filter(function (p) { return p.id !== id; });
+  if (mode === "device" && !writeLocal()) mode = "memory";
+  render();
+}
+
+function boot() { useDevice(); }
+
+/* ---------- rendering ---------- */
+function subText(p) {
+  if (typeof p.lat === "number") return fmtLL(p.lat) + ", " + fmtLL(p.lng);
+  if (p.link) return L("لينك جوجل مابس");
+  return p.query || "";
+}
+function rowEl(p, best) {
+  var li = el("li", "row" + (best ? " best" : ""));
+  var a = el("a", "plate");
+  a.href = dirUrl(p); a.target = "_blank"; a.rel = "noopener";
+  a.setAttribute("aria-label", T("وجّهني على {0}", p.name));
+  var txt = el("span", "plate-text");
+  txt.appendChild(el("span", "plate-name", p.name));
+  var sub = el("span", "plate-sub", subText(p));
+  if (typeof p.lat === "number") { sub.dir = "ltr"; sub.style.textAlign = LANG === "ar" ? "right" : "left"; }
+  txt.appendChild(sub);
+  var go = el("span", "plate-go");
+  go.appendChild(el("span", null, L("وجّهني")));
+  go.insertAdjacentHTML("beforeend", ARROW);
+  a.appendChild(txt); a.appendChild(go);
+  a.addEventListener("click", function () {
+    patchPlace(p.id, { usedAt: Date.now() }).catch(function () {});
+  });
+  li.appendChild(a);
+
+  var open = editingId === p.id;
+  var more = el("button", "more", "⋯");
+  more.type = "button";
+  more.setAttribute("aria-label", T("تعديل {0}", p.name));
+  more.setAttribute("aria-expanded", open ? "true" : "false");
+  more.addEventListener("click", function () {
+    editingId = open ? null : p.id; confirmDeleteId = null; render();
+  });
+  li.appendChild(more);
+
+  if (open) {
+    var box = el("div", "edit");
+    var inpId = "rename-" + p.id;
+    var lab = el("label", null, L("اسم المكان")); lab.htmlFor = inpId;
+    var inp = el("input", "text-input"); inp.id = inpId; inp.type = "text"; inp.maxLength = 60; inp.value = p.name;
+    var btns = el("div", "row-btns");
+    var saveB = el("button", "btn sign small", L("احفظ الاسم")); saveB.type = "button";
+    saveB.addEventListener("click", async function () {
+      var name = inp.value.trim();
+      if (!name || name === p.name) { editingId = null; render(); return; }
+      try { await patchPlace(p.id, { name: name }); editingId = null; render(); toast(L("الاسم اتغيّر")); }
+      catch (e) { writeError(e); }
+    });
+    btns.appendChild(saveB);
+    if (confirmDeleteId === p.id) {
+      var yes = el("button", "btn danger small", L("أيوه، امسحه")); yes.type = "button";
+      yes.addEventListener("click", async function () {
+        try { await removePlace(p.id); editingId = null; confirmDeleteId = null; render(); toast(T("اتمسح «{0}»", p.name)); }
+        catch (e) { writeError(e); }
+      });
+      var no = el("button", "btn ghost small", L("لأ، سيبه")); no.type = "button";
+      no.addEventListener("click", function () { confirmDeleteId = null; render(); });
+      btns.appendChild(yes); btns.appendChild(no);
+    } else {
+      var del = el("button", "btn danger small", L("امسح المكان")); del.type = "button";
+      del.addEventListener("click", function () { confirmDeleteId = p.id; render(); });
+      btns.appendChild(del);
+    }
+    box.appendChild(lab); box.appendChild(inp); box.appendChild(btns);
+    li.appendChild(box);
+  }
+  return li;
+}
+
+function render() {
+  var raw = qEl.value.trim();
+  var cmd = parseCommand(raw);
+  $("clearQ").hidden = !raw;
+  $("count").textContent = countLabel(places.length);
+
+  answerEl.replaceChildren();
+  var shown, searching = !!raw && !cmd.save;
+  if (searching) shown = rank(cmd.text); else shown = sorted(places);
+
+  if (raw && cmd.save) {
+    var b = el("button", "btn pin", cmd.name ? T("سجّل مكاني باسم «{0}»", cmd.name) : L("سجّل المكان اللي أنا فيه"));
+    b.type = "button";
+    b.addEventListener("click", function () { openSaver(cmd.name); });
+    answerEl.appendChild(b);
+  } else if (searching && !shown.length && mode !== "loading") {
+    answerEl.appendChild(el("p", "answer-note", T("مفيش مكان مسجّل بالاسم «{0}».", cmd.display)));
+    var a = el("a", "btn sign", T("دوّر على «{0}» في جوجل مابس", cmd.display));
+    a.href = searchUrl(cmd.display); a.target = "_blank"; a.rel = "noopener"; a.id = "searchLink";
+    var s = el("button", "btn ghost", T("سجّل مكاني الحالي باسم «{0}»", cmd.display));
+    s.type = "button";
+    s.addEventListener("click", function () { openSaver(cmd.display); });
+    answerEl.appendChild(a); answerEl.appendChild(s);
+  }
+  answerEl.hidden = !answerEl.childNodes.length;
+
+  listEl.replaceChildren();
+  shown.forEach(function (p, i) { listEl.appendChild(rowEl(p, searching && i === 0)); });
+  $("listTitle").textContent = searching ? L("نتيجة البحث") : L("الأماكن المسجّلة");
+
+  var showEmpty = !places.length;
+  emptyEl.hidden = !showEmpty;
+  if (showEmpty) {
+    if (mode === "loading") {
+      $("emptyTitle").textContent = L("بنجيب أماكنك المسجّلة…");
+      $("emptyBody").textContent = L("كل مكان تسجّله هيظهر هنا كلافتة، ودوسة واحدة عليها تفتح جوجل مابس وتوجّهك.");
+    } else {
+      $("emptyTitle").textContent = L("لسه مفيش أماكن مسجّلة");
+      $("emptyBody").textContent = L("أول ما توصل مكان عاوز ترجعله، دوس «سجّل المكان اللي أنا فيه» وسمّيه. بعدها هتلاقيه هنا كلافتة، ودوسة واحدة عليها تفتح جوجل مابس وتوجّهك.");
+    }
+  }
+  $("status").textContent =
+    mode === "device" ? L("أماكنك محفوظة على الجهاز ده بس. خُد نسخة احتياطية كل فترة.") :
+    mode === "memory" ? L("المتصفح مانع الحفظ، فالأماكن هتفضل لحد ما تقفل الصفحة بس.") : "";
+}
+
+/* ---------- save flow ---------- */
+function showStep(name) {
+  $("stepLocating").hidden = name !== "locating";
+  $("stepPaste").hidden = name !== "paste";
+  $("stepName").hidden = name !== "name";
+  if (name === "paste") {
+    $("locErr").hidden = true;
+    setTimeout(function () { $("loc").focus({ preventScroll: true }); }, 0);
+  }
+  if (name === "name") {
+    var loc = draft.loc, got = $("got");
+    got.replaceChildren();
+    if (loc.kind === "coords") {
+      got.appendChild(document.createTextNode(loc.auto ? L("اتحدّد مكانك: ") : L("الإحداثيات: ")));
+      var b = el("bdi", null, fmtLL(loc.lat) + ", " + fmtLL(loc.lng)); b.dir = "ltr";
+      got.appendChild(b);
+    } else if (loc.kind === "link") {
+      got.textContent = L("اتاخد لينك جوجل مابس. لما تدوس على المكان هيفتح في جوجل مابس وتدوس «الاتجاهات». لو عاوزه يبدأ التوجيه على طول، الصق الإحداثيات بدل اللينك.");
+    } else {
+      got.textContent = L("العنوان: ") + loc.query;
+    }
+    $("pname").value = draft.name || "";
+    $("nameErr").hidden = true;
+    checkDupe();
+    if (draft.byVoice && !draft.name && SR) {
+      draft.byVoice = false;
+      toast(L("تسجّله بإيه؟ قول الاسم."));
+      setTimeout(function () { listen("name"); }, 350);
+    } else {
+      setTimeout(function () { $("pname").focus({ preventScroll: true }); }, 0);
+    }
+  }
+}
+function tryGeo() {
+  return new Promise(function (res) {
+    var done = false;
+    function fin(v) { if (!done) { done = true; res(v); } }
+    if (!navigator.geolocation) return fin(null);
+    try {
+      navigator.geolocation.getCurrentPosition(function (p) {
+        fin({ lat: p.coords.latitude, lng: p.coords.longitude });
+      }, function () { fin(null); }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 });
+    } catch (e) { fin(null); }
+    setTimeout(function () { fin(null); }, 9000);
+  });
+}
+function openSaver(prefName, byVoice) {
+  draft = { loc: null, name: prefName || "", byVoice: !!byVoice };
+  $("loc").value = "";
+  saverEl.hidden = false;
+  if (geoBlocked) {
+    showStep("paste");
+  } else {
+    showStep("locating");
+    var mine = draft;
+    tryGeo().then(function (pos) {
+      if (draft !== mine) return;
+      if (pos && validLL(pos.lat, pos.lng)) {
+        draft.loc = { kind: "coords", lat: pos.lat, lng: pos.lng, auto: true };
+        showStep("name");
+      } else { geoBlocked = true; showStep("paste"); }
+    });
+  }
+  var calm = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  saverEl.scrollIntoView({ block: "start", behavior: calm ? "auto" : "smooth" });
+}
+function closeSaver() { draft = null; saverEl.hidden = true; }
+function takeLoc(text) {
+  var r = parseLocation(text), err = $("locErr");
+  if (!r) { err.textContent = L("الصق الإحداثيات أو لينك المكان الأول."); err.hidden = false; return; }
+  if (r.kind === "error") {
+    err.textContent = L("اللينك ده مش من جوجل مابس. انسخ الإحداثيات أو لينك المشاركة من جوجل مابس.");
+    err.hidden = false; return;
+  }
+  err.hidden = true;
+  draft.loc = r;
+  showStep("name");
+}
+function findDupe(name) {
+  var n = norm(name);
+  return n ? places.find(function (p) { return norm(p.name) === n; }) : null;
+}
+function checkDupe() {
+  var d = findDupe($("pname").value), dupe = $("dupe");
+  dupe.hidden = !d;
+  if (d) dupe.textContent = T("فيه مكان مسجّل باسم «{0}». التسجيل هيحدّث موقعه للمكان الجديد.", d.name);
+  $("doSave").textContent = d ? T("حدّث «{0}»", d.name) : L("سجّل");
+}
+async function commitSave() {
+  if (busy || !draft || !draft.loc) return;
+  var name = $("pname").value.trim().slice(0, 60), err = $("nameErr");
+  if (!name) { err.textContent = L("اكتب اسم للمكان."); err.hidden = false; $("pname").focus(); return; }
+  err.hidden = true;
+  var loc = draft.loc, dupe = findDupe(name), now = Date.now();
+  var data = {
+    kind: "place", name: name,
+    lat: loc.kind === "coords" ? loc.lat : null,
+    lng: loc.kind === "coords" ? loc.lng : null,
+    link: loc.kind === "link" ? loc.link : null,
+    query: loc.kind === "query" ? loc.query : null,
+    createdAt: dupe && dupe.createdAt ? dupe.createdAt : now,
+    usedAt: now
+  };
+  busy = true; $("doSave").disabled = true;
+  try {
+    await putPlace(data, dupe ? dupe.id : null);
+    closeSaver();
+    qEl.value = "";
+    render();
+    toast(T("اتسجّل «{0}»", name));
+  } catch (e) { writeError(e); }
+  busy = false; $("doSave").disabled = false;
+}
+
+/* ---------- wiring ---------- */
+function buildChips() {
+  var names = LANG === "ar" ? ["البيت", "الشغل", "بيت العيلة", "الجيم", "السوبر ماركت"]
+    : ["Home", "Work", "Family home", "Gym", "Supermarket"];
+  $("chips").replaceChildren();
+  names.forEach(function (n) {
+    var c = el("button", "chip", n); c.type = "button";
+    c.addEventListener("click", function () { $("pname").value = n; checkDupe(); $("pname").focus(); });
+    $("chips").appendChild(c);
+  });
+}
+function applyLang() {
+  applyStatic();
+  buildChips();
+  render();
+  if (draft && draft.loc && !$("stepName").hidden) { draft.name = $("pname").value; showStep("name"); }
+}
+$("langBtn").addEventListener("click", function () {
+  LANG = LANG === "ar" ? "en" : "ar";
+  try { localStorage.setItem(LANG_KEY, LANG); } catch (e) {}
+  stopListen();
+  applyLang();
+});
+qEl.addEventListener("input", render);
+$("clearQ").addEventListener("click", function () { qEl.value = ""; render(); qEl.focus(); });
+$("goForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var raw = qEl.value.trim();
+  if (!raw) return;
+  var cmd = parseCommand(raw);
+  if (cmd.save) { openSaver(cmd.name); return; }
+  var target = listEl.querySelector(".row.best .plate") || $("searchLink");
+  if (target) target.click();
+});
+$("saveHere").addEventListener("click", function () { openSaver(""); });
+$("locNext").addEventListener("click", function () { takeLoc($("loc").value); });
+$("loc").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); takeLoc($("loc").value); } });
+$("loc").addEventListener("paste", function (e) {
+  var t = e.clipboardData && e.clipboardData.getData("text");
+  if (!t) return;
+  e.preventDefault();
+  $("loc").value = t.trim().replace(/\s+/g, " ");
+  takeLoc(t);
+});
+$("pname").addEventListener("input", checkDupe);
+$("pname").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); commitSave(); } });
+$("doSave").addEventListener("click", commitSave);
+$("changeLoc").addEventListener("click", function () { if (draft) { draft.name = $("pname").value; showStep("paste"); } });
+saverEl.addEventListener("click", function (e) {
+  if (e.target.closest && e.target.closest("[data-cancel]")) closeSaver();
+});
+document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !saverEl.hidden) closeSaver(); });
+
+/* ---------- voice ---------- */
+var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+var rec = null, listeningFor = null;
+function setMic() {
+  $("micGo").classList.toggle("on", listeningFor === "go");
+  $("micName").classList.toggle("on", listeningFor === "name");
+  $("micGo").setAttribute("aria-pressed", listeningFor === "go" ? "true" : "false");
+  $("micName").setAttribute("aria-pressed", listeningFor === "name" ? "true" : "false");
+}
+function stopListen() {
+  if (rec) { try { rec.onend = null; rec.abort(); } catch (e) {} }
+  rec = null; listeningFor = null; setMic();
+}
+function listen(target) {
+  if (!SR) return;
+  if (listeningFor === target) { stopListen(); return; }
+  stopListen();
+  try {
+    var r = new SR();
+    r.lang = LANG === "ar" ? "ar-EG" : "en-US"; r.interimResults = false; r.maxAlternatives = 1;
+    r.onresult = function (e) {
+      var t = e.results[0][0].transcript.trim().replace(/[.؟?!،]+$/, "");
+      if (t) heard(target, t);
+    };
+    r.onerror = function (e) {
+      if (e.error === "not-allowed" || e.error === "service-not-allowed") toast(L("اسمح للصفحة بالميكروفون من إعدادات المتصفح."));
+      else if (e.error === "no-speech") toast(L("ماسمعتش حاجة. جرّب تاني."));
+      else if (e.error !== "aborted") toast(L("الميكروفون ماشتغلش. اكتب الاسم بدل ما تقوله."));
+    };
+    r.onend = function () { if (rec === r) { rec = null; listeningFor = null; setMic(); } };
+    rec = r; listeningFor = target; setMic();
+    r.start();
+  } catch (e) { rec = null; listeningFor = null; setMic(); }
+}
+function heard(target, text) {
+  if (target === "name") {
+    $("pname").value = text.slice(0, 60);
+    checkDupe();
+    return;
+  }
+  qEl.value = text;
+  render();
+  var cmd = parseCommand(text);
+  if (cmd.save) { openSaver(cmd.name, true); return; }
+  var best = rankScored(cmd.text)[0];
+  if (best && best.s >= 85) {
+    patchPlace(best.p.id, { usedAt: Date.now() }).catch(function () {});
+    toast(T("رايحين «{0}»…", best.p.name));
+    location.assign(dirUrl(best.p));
+  }
+}
+if (SR) {
+  $("micGo").hidden = false; $("micName").hidden = false;
+  $("micGo").addEventListener("click", function () { listen("go"); });
+  $("micName").addEventListener("click", function () { listen("name"); });
+} else {
+  qEl.style.paddingInlineEnd = "48px";
+  $("clearQ").style.insetInlineEnd = "6px";
+}
+$("retryGeo").addEventListener("click", function () {
+  geoBlocked = false;
+  openSaver(draft ? draft.name : "");
+});
+
+/* ---------- backup ---------- */
+$("exportBtn").addEventListener("click", function () {
+  if (!places.length) { toast(L("مفيش أماكن مسجّلة لسه.")); return; }
+  var blob = new Blob([JSON.stringify({ app: "my-places", version: 1, places: places }, null, 2)], { type: "application/json" });
+  var a = document.createElement("a"), url = URL.createObjectURL(blob);
+  a.href = url; a.download = "fav-places.json";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+});
+$("importBtn").addEventListener("click", function () { $("importFile").click(); });
+$("importFile").addEventListener("change", function () {
+  var inp = this, f = inp.files && inp.files[0];
+  if (!f) return;
+  var fr = new FileReader();
+  fr.onload = function () {
+    try {
+      var v = JSON.parse(fr.result), arr = Array.isArray(v) ? v : v && v.places, ok = 0;
+      if (!Array.isArray(arr)) throw new Error("shape");
+      arr.forEach(function (p) {
+        if (!p || typeof p.name !== "string" || !p.name.trim()) return;
+        var c = {
+          id: "l" + Date.now().toString(36) + ok, kind: "place", name: p.name.trim().slice(0, 60),
+          lat: typeof p.lat === "number" ? p.lat : null, lng: typeof p.lng === "number" ? p.lng : null,
+          link: typeof p.link === "string" && isMapsHost(p.link) ? p.link : null,
+          query: typeof p.query === "string" ? p.query.slice(0, 200) : null,
+          createdAt: +p.createdAt || Date.now(), usedAt: +p.usedAt || 0
+        };
+        if (c.lat !== null && !validLL(c.lat, c.lng)) return;
+        if (c.lat === null && !c.link && !c.query) return;
+        var d = findDupe(c.name);
+        if (d) { c.id = d.id; places = places.map(function (x) { return x.id === d.id ? c : x; }); }
+        else places = places.concat([c]);
+        ok++;
+      });
+      if (mode === "device" && !writeLocal()) mode = "memory";
+      render();
+      toast(ok ? T("اترجّع: {0}", countLabel(ok)) : L("الملف مفيهوش أماكن."));
+    } catch (e) { toast(L("الملف ده مش نسخة احتياطية سليمة.")); }
+    inp.value = "";
+  };
+  fr.readAsText(f);
+});
+
+buildChips();
+render();
+boot();
+if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+</script>
+</body>
+</html>
