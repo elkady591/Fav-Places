@@ -316,10 +316,6 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
       <p>بحدّد مكانك…</p>
     </div>
 
-    <div id="stepFetch" class="step" hidden>
-      <p>بجيب المكان من جوجل مابس…</p>
-    </div>
-
     <div id="stepPaste" class="step" hidden>
       <p>ماقدرتش أحدّد مكانك تلقائي. اسمح للصفحة بالموقع من المتصفح وجرّب تاني، أو هات المكان من جوجل مابس:</p>
       <button id="retryGeo" class="linklike" type="button">حدّد مكاني تلقائي تاني</button>
@@ -380,8 +376,8 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
     <input id="importFile" type="file" accept="application/json,.json" hidden>
   </div>
   <section id="snaps" class="list-wrap" aria-labelledby="snapsTitle" hidden>
-    <h2 id="snapsTitle">نسخ يومية محفوظة</h2>
-    <p class="note">لو مكان اتمسح بالغلط، دوس على يوم المسح أو يوم قبله علشان يرجع. الأماكن الموجودة مابتتغيّرش.</p>
+    <h2 id="snapsTitle">نسخ محفوظة</h2>
+    <p class="note">البرنامج بياخد نسخة لوحده قبل كل تعديل. لو مكان اتمسح بالغلط، دوس على نسخة من قبل المسح علشان يرجع. الأماكن الموجودة مابتتغيّرش.</p>
     <div id="snapList" class="chips"></div>
   </section>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
@@ -458,12 +454,11 @@ var EN = {
   "رايحين «{0}»…": "Heading to “{0}”…",
   "اترجّع: {0}": "Restored: {0}",
   "كل الأماكن المسجّلة": "All saved places",
-  "نسخ يومية محفوظة": "Daily copies",
-  "لو مكان اتمسح بالغلط، دوس على يوم المسح أو يوم قبله علشان يرجع. الأماكن الموجودة مابتتغيّرش.": "If a place was deleted by mistake, tap the day it was deleted or a day before to bring it back. The places you have now are not changed.",
+  "نسخ محفوظة": "Saved copies",
+  "البرنامج بياخد نسخة لوحده قبل كل تعديل. لو مكان اتمسح بالغلط، دوس على نسخة من قبل المسح علشان يرجع. الأماكن الموجودة مابتتغيّرش.": "The app keeps a copy by itself before every change. If a place was deleted by mistake, tap a copy from before that to bring it back. The places you have now are not changed.",
   "رجع: {0}": "Brought back: {0}",
-  "مفيش أماكن ناقصة عن نسخة اليوم ده.": "Nothing is missing compared with that day's copy.",
+  "مفيش أماكن ناقصة عن النسخة دي.": "Nothing is missing compared with that copy.",
   "ماقدرتش أفتح النسخة دي.": "Couldn't open that copy.",
-  "بجيب المكان من جوجل مابس…": "Getting the place from Google Maps…",
   "ماقدرتش أقرا مكان من اللي اتبعت. الصق الإحداثيات هنا.": "Couldn't read a place from what was shared. Paste the coordinates here.",
   "آخر الأماكن": "Recent places",
   "رجوع": "Back",
@@ -875,7 +870,6 @@ function renderStatus() {
 /* ---------- save flow ---------- */
 function showStep(name) {
   $("stepLocating").hidden = name !== "locating";
-  $("stepFetch").hidden = name !== "fetch";
   $("stepPaste").hidden = name !== "paste";
   $("stepName").hidden = name !== "name";
   if (name === "paste") {
@@ -1305,16 +1299,18 @@ function pollSync() {
   remoteGet(true).then(function (r) { if (r.ver !== remoteVer) queueSync(); }, function () { setSync("offline"); });
 }
 
-/* The store keeps the copy as it was before each day's first change (7 days).
-   A day's copy brings back the places that are missing now; it removes nothing. */
+/* The store keeps the places as they were before every change (the last 5
+   changes and the start of each of the last 7 days). A copy brings back the
+   places that are missing now; it removes nothing. */
 async function loadSnaps() {
   if (!SYNC_URL || !syncPwd) return;
   try {
     var r = await (await fetch(syncUrl("snaps=1"), { cache: "no-store" })).json();
-    if (view !== "all" || !Array.isArray(r.days) || !r.days.length) return;
+    if (view !== "all" || !Array.isArray(r.snaps) || !r.snaps.length) return;
     $("snapList").replaceChildren();
-    r.days.slice().reverse().forEach(function (day) {
-      var c = el("button", "chip", day); c.type = "button"; c.dir = "ltr";
+    r.snaps.slice().reverse().forEach(function (day) {
+      // 2026-10-06_14-05-09 -> 2026-10-06 14:05:09
+      var c = el("button", "chip", day.slice(0, 10) + " " + day.slice(11).replace(/-/g, ":")); c.type = "button"; c.dir = "ltr";
       c.addEventListener("click", function () { restoreSnap(day, c); });
       $("snapList").appendChild(c);
     });
@@ -1339,7 +1335,7 @@ async function restoreSnap(day, btn) {
       render();
       queueSync();
     }
-    toast(n ? T("رجع: {0}", countLabel(n)) : L("مفيش أماكن ناقصة عن نسخة اليوم ده."));
+    toast(n ? T("رجع: {0}", countLabel(n)) : L("مفيش أماكن ناقصة عن النسخة دي."));
   } catch (e) { toast(L("ماقدرتش أفتح النسخة دي.")); }
   btn.disabled = false;
 }
@@ -1385,8 +1381,8 @@ function startSync() {
 
 /* ---------- shared from Google Maps: Share -> FAV Places ----------
    The service worker keeps what was shared on the phone and reopens the app
-   with ?shared=1. A short maps.app.goo.gl link holds no coordinates, so the
-   sync store follows it and sends back the full link. */
+   with ?shared=1. A short maps.app.goo.gl link holds no coordinates and can't
+   be followed from a web page, so such a place is saved as its link. */
 function placeNameFromUrl(u) {
   var m = String(u).match(/\/maps\/place\/([^\/@?]+)/), n = "";
   if (!m) return "";
@@ -1400,25 +1396,11 @@ function sharedName(data) {
   });
   return (lines[0] || "").slice(0, 60);
 }
-async function takeShared(data) {
+function takeShared(data) {
   var loc = parseLocation([data.title, data.text, data.url].filter(Boolean).join("\n"));
   setView("home");
   draft = { loc: null, name: sharedName(data), byVoice: false };
-  var mine = draft;
   saverEl.hidden = false;
-  if (loc && loc.kind === "link" && SYNC_URL) {
-    showStep("fetch");
-    try {
-      var r = await remotePut({ resolve: loc.link });
-      if (draft !== mine) return;
-      if (r && r.ok) {
-        var full = parseLocation(r.url);
-        if (full && full.kind === "coords") loc = full;
-        else if (typeof r.lat === "number" && validLL(r.lat, r.lng)) loc = { kind: "coords", lat: r.lat, lng: r.lng };
-        if (!draft.name) draft.name = placeNameFromUrl(r.url);
-      }
-    } catch (e) { if (draft !== mine) return; }
-  }
   if (!loc || loc.kind === "error") {
     showStep("paste");
     $("locErr").textContent = L("ماقدرتش أقرا مكان من اللي اتبعت. الصق الإحداثيات هنا."); $("locErr").hidden = false;
