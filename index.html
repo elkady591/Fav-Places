@@ -95,16 +95,20 @@ button, input { font: inherit; color: inherit; }
 
 /* Header */
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.top-end { display: flex; align-items: center; gap: 12px; }
+.top-end { display: flex; align-items: center; gap: 8px; }
 .lang {
   flex: none; width: 44px; height: 44px;
   background: var(--surface); color: var(--ink);
   border: 1.5px solid var(--line); border-radius: var(--radius);
   font-weight: 700; font-size: 1rem; line-height: 1; cursor: pointer;
 }
+.lang { display: grid; place-items: center; padding: 0; }
+.lang[aria-pressed="true"] { background: var(--sign); color: var(--sign-ink); border-color: var(--sign); }
+.stack { display: flex; flex-direction: column; gap: 20px; }
+#backBtn { align-self: flex-start; }
 html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
-.top h1 { font-family: var(--font-display); font-weight: 700; font-size: 2rem; line-height: 1.2; }
-.count { color: var(--muted); font-size: 0.9375rem; font-variant-numeric: tabular-nums; }
+.top h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.75rem; line-height: 1.2; white-space: nowrap; }
+.count { color: var(--muted); font-size: 0.875rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 /* Command box */
 .go { display: flex; flex-direction: column; gap: 8px; }
@@ -270,13 +274,14 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
     <h1 dir="ltr">FAV Places</h1>
     <div class="top-end">
       <p id="count" class="count"></p>
+      <button id="gearBtn" class="lang" type="button" aria-label="كل الأماكن المسجّلة"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       <button id="langBtn" class="lang" type="button"></button>
     </div>
   </header>
 
   <section id="lock" class="saver" aria-labelledby="lockTitle" hidden>
     <h2 id="lockTitle">اكتب الباسورد</h2>
-    <p>مرة واحدة بس على الموبايل ده، علشان أماكنك المسجّلة تنزل هنا.</p>
+    <p id="lockNote"></p>
     <form id="pwdForm" class="step">
       <input id="pwd" class="text-input" type="password" autocomplete="current-password" placeholder="الباسورد">
       <p id="pwdErr" class="err" hidden></p>
@@ -287,6 +292,7 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
     </form>
   </section>
 
+  <div id="homeBox" class="stack">
   <form id="goForm" class="go" autocomplete="off">
     <label for="q" class="lbl">عاوز تروح فين؟</label>
     <div class="field">
@@ -351,8 +357,11 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
     </div>
   </section>
 
+  </div>
+
   <section class="list-wrap" aria-labelledby="listTitle">
-    <h2 id="listTitle">الأماكن المسجّلة</h2>
+    <button id="backBtn" class="btn ghost small" type="button" hidden>رجوع</button>
+    <h2 id="listTitle">آخر الأماكن</h2>
     <ul id="list"></ul>
     <div id="empty" class="empty">
       <strong id="emptyTitle">بنجيب أماكنك المسجّلة…</strong>
@@ -361,7 +370,7 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
   </section>
 
   <p id="status" class="status"></p>
-  <div class="tools">
+  <div id="tools" class="tools" hidden>
     <button id="exportBtn" class="btn ghost small" type="button">حمّل نسخة احتياطية</button>
     <button id="importBtn" class="btn ghost small" type="button">استرجع نسخة</button>
     <input id="importFile" type="file" accept="application/json,.json" hidden>
@@ -439,15 +448,24 @@ var EN = {
   "اتسجّل «{0}»": "Saved “{0}”",
   "رايحين «{0}»…": "Heading to “{0}”…",
   "اترجّع: {0}": "Restored: {0}",
+  "كل الأماكن المسجّلة": "All saved places",
+  "آخر الأماكن": "Recent places",
+  "رجوع": "Back",
+  "لسه مفيش أماكن فتحتها": "No recent places yet",
+  "أي مكان تفتحه أو تسجّله هيظهر هنا. كل أماكنك المسجّلة هتلاقيها من الترس اللي فوق.": "Any place you open or save shows up here. All your saved places are under the gear at the top.",
   "مفيش أماكن جديدة في الملف.": "No new places in the file.",
   "اكتب الباسورد": "Enter the password",
-  "مرة واحدة بس على الموبايل ده، علشان أماكنك المسجّلة تنزل هنا.": "Only once on this phone, to bring your saved places here.",
+  "مرة واحدة بس على الموبايل ده، وبعدها أماكنك تتزامن على كل تليفوناتك.": "Only once on this phone. After that your places sync across all your phones.",
+  "اختار باسورد. هتكتب نفس الباسورد مرة واحدة على كل تليفون من تليفوناتك.": "Choose a password. You'll type the same one once on each of your phones.",
+  "مفيش اتصال. جرّب تاني.": "No connection. Try again.",
+  "تمام. أماكنك بتتزامن على كل تليفوناتك.": "Done. Your places sync across all your phones.",
+  "أماكنك بتتزامن على كل تليفوناتك.": "Your places sync across all your phones.",
+  "مفيش اتصال دلوقتي. الأماكن هتتزامن أول ما النت يرجع.": "No connection right now. Places will sync when you're back online.",
   "الباسورد": "Password",
   "فتح": "Open",
   "بعدين": "Later",
   "الباسورد غلط": "Wrong password",
-  "حصلت مشكلة في قراءة الأماكن": "Couldn't read the places",
-  "أماكنك نزلت: {0}": "Your places arrived: {0}"
+  "حصلت مشكلة في قراءة الأماكن": "Couldn't read the places"
 };
 var LANG_KEY = "fav-places.lang";
 var LANG = "en";
@@ -595,8 +613,12 @@ var mode = "loading"; // loading | account | device | memory
 var editingId = null, confirmDeleteId = null;
 var draft = null;      // {loc, name} while saving a place
 var geoBlocked = false;
+var syncState = "off";   // off | ok | offline
+var view = "home";       // home: the last places used | all: every saved place, behind the gear
 var busy = false;
 var LS_KEY = "my-places.v1";
+var GR_KEY = "my-places.graves";   // id -> time, for places deleted on this phone
+var graves = {};
 
 var $ = function (id) { return document.getElementById(id); };
 var qEl = $("q"), listEl = $("list"), emptyEl = $("empty"), answerEl = $("answer");
@@ -656,13 +678,19 @@ function readLocal() {
   } catch (e) { return null; }
 }
 function writeLocal() {
-  try { localStorage.setItem(LS_KEY, JSON.stringify(places)); return true; }
-  catch (e) { return false; }
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(places));
+    localStorage.setItem(GR_KEY, JSON.stringify(graves));
+    return true;
+  } catch (e) { return false; }
 }
 function useDevice() {
   var saved = readLocal();
   if (saved === null) { mode = "memory"; places = []; }
-  else { mode = "device"; places = saved; }
+  else {
+    mode = "device"; places = saved;
+    try { graves = JSON.parse(localStorage.getItem(GR_KEY) || "{}") || {}; } catch (e) { graves = {}; }
+  }
   render();
 }
 function writeError(e) {
@@ -671,6 +699,7 @@ function writeError(e) {
   else toast(L("ماتسجّلش. جرّب تاني."));
 }
 async function putPlace(data, id) {
+  data = Object.assign({}, data, { updatedAt: Date.now() });
   if (id) {
     places = places.map(function (p) { return p.id === id ? Object.assign({ id: id }, data) : p; });
   } else {
@@ -678,16 +707,23 @@ async function putPlace(data, id) {
   }
   if (mode === "device" && !writeLocal()) mode = "memory";
   render();
+  queueSync();
 }
+/* Opening a place only moves it up this phone's list; a new name goes to every phone */
 async function patchPlace(id, patch) {
+  var renamed = patch.name !== undefined;
+  if (renamed) patch = Object.assign({ updatedAt: Date.now() }, patch);
   places = places.map(function (p) { return p.id === id ? Object.assign({}, p, patch) : p; });
   if (mode === "device" && !writeLocal()) mode = "memory";
   render();
+  if (renamed) queueSync();
 }
 async function removePlace(id) {
   places = places.filter(function (p) { return p.id !== id; });
+  graves[id] = Date.now();
   if (mode === "device" && !writeLocal()) mode = "memory";
   render();
+  queueSync();
 }
 
 function boot() { useDevice(); }
@@ -768,8 +804,13 @@ function render() {
   $("count").textContent = countLabel(places.length);
 
   answerEl.replaceChildren();
-  var shown, searching = !!raw && !cmd.save;
-  if (searching) shown = rank(cmd.text); else shown = sorted(places);
+  var all = view === "all";
+  var shown, searching = !all && !!raw && !cmd.save;
+  if (all) shown = places.slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
+  else if (searching) shown = rank(cmd.text);
+  else shown = sorted(places.filter(function (p) { return p.usedAt > 0; })).slice(0, 5);
+  $("homeBox").hidden = all; $("backBtn").hidden = !all; $("tools").hidden = !all;
+  $("gearBtn").setAttribute("aria-pressed", all ? "true" : "false");
 
   if (raw && cmd.save) {
     var b = el("button", "btn pin", cmd.name ? T("سجّل مكاني باسم «{0}»", cmd.name) : L("سجّل المكان اللي أنا فيه"));
@@ -789,12 +830,15 @@ function render() {
 
   listEl.replaceChildren();
   shown.forEach(function (p, i) { listEl.appendChild(rowEl(p, searching && i === 0)); });
-  $("listTitle").textContent = searching ? L("نتيجة البحث") : L("الأماكن المسجّلة");
+  $("listTitle").textContent = all ? L("كل الأماكن المسجّلة") : searching ? L("نتيجة البحث") : L("آخر الأماكن");
 
-  var showEmpty = !places.length;
+  var showEmpty = !shown.length && !searching;
   emptyEl.hidden = !showEmpty;
   if (showEmpty) {
-    if (mode === "loading") {
+    if (places.length) {
+      $("emptyTitle").textContent = L("لسه مفيش أماكن فتحتها");
+      $("emptyBody").textContent = L("أي مكان تفتحه أو تسجّله هيظهر هنا. كل أماكنك المسجّلة هتلاقيها من الترس اللي فوق.");
+    } else if (mode === "loading") {
       $("emptyTitle").textContent = L("بنجيب أماكنك المسجّلة…");
       $("emptyBody").textContent = L("كل مكان تسجّله هيظهر هنا كلافتة، ودوسة واحدة عليها تفتح جوجل مابس وتوجّهك.");
     } else {
@@ -802,7 +846,12 @@ function render() {
       $("emptyBody").textContent = L("أول ما توصل مكان عاوز ترجعله، دوس «سجّل المكان اللي أنا فيه» وسمّيه. بعدها هتلاقيه هنا كلافتة، ودوسة واحدة عليها تفتح جوجل مابس وتوجّهك.");
     }
   }
+  renderStatus();
+}
+function renderStatus() {
   $("status").textContent =
+    syncState === "ok" ? L("أماكنك بتتزامن على كل تليفوناتك.") :
+    syncState === "offline" ? L("مفيش اتصال دلوقتي. الأماكن هتتزامن أول ما النت يرجع.") :
     mode === "device" ? L("أماكنك محفوظة على الجهاز ده بس. خُد نسخة احتياطية كل فترة.") :
     mode === "memory" ? L("المتصفح مانع الحفظ، فالأماكن هتفضل لحد ما تقفل الصفحة بس.") : "";
 }
@@ -937,6 +986,7 @@ function applyLang() {
   buildChips();
   render();
   if (draft && draft.loc && !$("stepName").hidden) { draft.name = $("pname").value; showStep("name"); }
+  lockNote();
 }
 $("langBtn").addEventListener("click", function () {
   LANG = LANG === "ar" ? "en" : "ar";
@@ -956,6 +1006,14 @@ $("goForm").addEventListener("submit", function (e) {
   if (target) target.click();
 });
 $("saveHere").addEventListener("click", function () { openSaver(""); });
+function setView(v) {
+  view = v; editingId = null; confirmDeleteId = null;
+  if (v === "all") closeSaver();
+  render();
+  window.scrollTo(0, 0);
+}
+$("gearBtn").addEventListener("click", function () { setView(view === "all" ? "home" : "all"); });
+$("backBtn").addEventListener("click", function () { setView("home"); });
 $("locNext").addEventListener("click", function () { takeLoc($("loc").value); });
 $("loc").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); takeLoc($("loc").value); } });
 $("loc").addEventListener("paste", function (e) {
@@ -1074,7 +1132,7 @@ function mergePlaces(arr) {
       lat: typeof p.lat === "number" ? p.lat : null, lng: typeof p.lng === "number" ? p.lng : null,
       link: typeof p.link === "string" && isMapsHost(p.link) ? p.link : null,
       query: typeof p.query === "string" ? p.query.slice(0, 200) : null,
-      createdAt: +p.createdAt || Date.now(), usedAt: +p.usedAt || 0
+      createdAt: +p.createdAt || Date.now(), usedAt: +p.usedAt || 0, updatedAt: Date.now()
     };
     if (c.lat !== null && !validLL(c.lat, c.lng)) return;
     if (c.lat === null && !c.link && !c.query) return;
@@ -1086,68 +1144,191 @@ function mergePlaces(arr) {
   });
   if (mode === "device" && !writeLocal()) mode = "memory";
   render();
+  if (ok) queueSync();
   return ok;
 }
 
-/* ---------- shared places: places.enc on GitHub, encrypted with the user's password ---------- */
-var PWD_KEY = "fav-places.pwd", SHARED_KEY = "fav-places.shared";
-var BUNDLE = null;
+/* ---------- sync: one copy of the places on the user's Google account ----------
+   The copy is encrypted here with the user's password before it leaves the
+   phone, so the store (sync-backend/Code.gs) only ever holds unreadable text.
+   Every phone reads it, merges it with its own places and writes it back. */
+var SYNC_URL = "https://script.google.com/macros/s/AKfycbzosTRUuv1n2YLIbpd8OihVUP7CE_1qAhom4q613XpMz1RAQ6-opg2jdMMcIMc9Q_5L_Q/exec";
+var PWD_KEY = "fav-places.pwd";
+var syncPwd = "", remoteVer = null, syncBusy = false, syncAgain = false, keyCache = {}, lockFirst = false;
+
 function lsGet(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
 function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
-async function decryptBundle(b, pwd) {
-  var b64 = function (s) { return Uint8Array.from(atob(s), function (c) { return c.charCodeAt(0); }); };
+function b64e(u8) {
+  var s = "";
+  for (var i = 0; i < u8.length; i += 8192) s += String.fromCharCode.apply(null, u8.subarray(i, i + 8192));
+  return btoa(s);
+}
+function b64d(s) { return Uint8Array.from(atob(s), function (c) { return c.charCodeAt(0); }); }
+function joined(a, b) { var u = new Uint8Array(a.length + b.length); u.set(a); u.set(b, a.length); return u; }
+
+/* PBKDF2-SHA256 -> AES key + HMAC key + the key the store checks before a write */
+async function deriveKeys(pwd, salt, iter) {
+  var id = salt + ":" + iter + ":" + pwd;
+  if (keyCache[id]) return keyCache[id];
   var base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pwd), "PBKDF2", false, ["deriveBits"]);
   var bits = new Uint8Array(await crypto.subtle.deriveBits(
-    { name: "PBKDF2", salt: b64(b.salt), iterations: b.iter, hash: "SHA-256" }, base, 512));
-  var iv = b64(b.iv), ct = b64(b.ct), signed = new Uint8Array(iv.length + ct.length);
-  signed.set(iv); signed.set(ct, iv.length);
-  var macKey = await crypto.subtle.importKey("raw", bits.slice(32), { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
-  if (!await crypto.subtle.verify("HMAC", macKey, b64(b.mac), signed)) throw new Error("pwd");
-  var aesKey = await crypto.subtle.importKey("raw", bits.slice(0, 32), "AES-CBC", false, ["decrypt"]);
-  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-CBC", iv: iv }, aesKey, ct)));
+    { name: "PBKDF2", salt: b64d(salt), iterations: iter, hash: "SHA-256" }, base, 768));
+  var k = {
+    aes: await crypto.subtle.importKey("raw", bits.slice(0, 32), "AES-CBC", false, ["encrypt", "decrypt"]),
+    mac: await crypto.subtle.importKey("raw", bits.slice(32, 64), { name: "HMAC", hash: "SHA-256" }, false, ["sign", "verify"]),
+    auth: b64e(bits.slice(64, 96))
+  };
+  keyCache = {}; keyCache[id] = k;
+  return k;
 }
-function showLock(err) {
+async function sealSet(k, salt, iter, set) {
+  var iv = crypto.getRandomValues(new Uint8Array(16));
+  var ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-CBC", iv: iv }, k.aes,
+    new TextEncoder().encode(JSON.stringify(set))));
+  var mac = new Uint8Array(await crypto.subtle.sign("HMAC", k.mac, joined(iv, ct)));
+  return JSON.stringify({ v: 1, iter: iter, salt: salt, iv: b64e(iv), ct: b64e(ct), mac: b64e(mac) });
+}
+async function openSet(k, b) {
+  var iv = b64d(b.iv), ct = b64d(b.ct);
+  if (!await crypto.subtle.verify("HMAC", k.mac, b64d(b.mac), joined(iv, ct))) throw new Error("pwd");
+  var set = JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-CBC", iv: iv }, k.aes, ct)));
+  return { places: Array.isArray(set.places) ? set.places : [], graves: set.graves || {} };
+}
+
+/* Two sets of places into one. The later change to a place wins, a deleted
+   place stays deleted unless it was changed after that, and when two phones
+   saved the same name the newer one stays. */
+function stamp(p) { return p.updatedAt || p.createdAt || 0; }
+function mergeSets(a, b) {
+  var gr = Object.assign({}, a.graves), byId = {}, byName = {};
+  Object.keys(b.graves).forEach(function (id) { if (!(gr[id] >= b.graves[id])) gr[id] = b.graves[id]; });
+  a.places.concat(b.places).forEach(function (p) {
+    if (!p || !p.id || !p.name) return;
+    var o = byId[p.id];
+    if (!o) { byId[p.id] = p; return; }
+    var win = stamp(p) > stamp(o) ? p : o, lose = win === p ? o : p;
+    byId[p.id] = Object.assign({}, win, { usedAt: Math.max(win.usedAt || 0, lose.usedAt || 0) });
+  });
+  var list = Object.keys(byId).map(function (id) { return byId[id]; })
+    .filter(function (p) { return !(gr[p.id] >= stamp(p)); })
+    .sort(function (x, y) { return stamp(y) - stamp(x) || (x.id < y.id ? -1 : 1); })
+    .filter(function (p) {
+      var n = norm(p.name);
+      if (byName[n]) { gr[p.id] = stamp(p); return false; }
+      byName[n] = true;
+      return true;
+    });
+  return { places: list, graves: gr };
+}
+/* Everything that has to be equal on two phones, in a fixed order (not usedAt) */
+function canon(set) {
+  return JSON.stringify([
+    set.places.map(function (p) {
+      return [p.id, p.name, p.lat, p.lng, p.link || null, p.query || null, p.createdAt || 0, p.updatedAt || 0];
+    }).sort(function (x, y) { return x[0] < y[0] ? -1 : 1; }),
+    Object.keys(set.graves).sort().map(function (id) { return [id, set.graves[id]]; })
+  ]);
+}
+
+function syncUrl(q) { return SYNC_URL + (q ? (SYNC_URL.indexOf("?") < 0 ? "?" : "&") + q : ""); }
+async function remoteGet(verOnly) {
+  var r = await fetch(syncUrl(verOnly ? "ver=1" : ""), { cache: "no-store" });
+  if (!r.ok) throw new Error("net");
+  return r.json();
+}
+async function remotePut(body) {
+  // text/plain keeps the browser from asking the store's permission first, which Apps Script can't answer
+  var r = await fetch(syncUrl(""), { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(body) });
+  if (!r.ok) throw new Error("net");
+  return r.json();
+}
+/* Read, merge, write back. Fails with "pwd" when the password is not the one the copy was locked with. */
+async function syncNow(pwd) {
+  for (var t = 0; t < 4; t++) {
+    var r = await remoteGet(false);
+    var blob = r.data ? JSON.parse(r.data) : null;
+    var salt = blob ? blob.salt : b64e(crypto.getRandomValues(new Uint8Array(16)));
+    var iter = blob ? blob.iter : 200000;
+    var k = await deriveKeys(pwd, salt, iter);
+    var remote = blob ? await openSet(k, blob) : { places: [], graves: {} };
+    var mine = canon({ places: places, graves: graves });
+    var m = mergeSets({ places: places, graves: graves }, remote);
+    places = m.places; graves = m.graves;
+    if (mode === "device" && !writeLocal()) mode = "memory";
+    if (canon(m) !== mine) render();
+    if (blob && canon(m) === canon(remote)) { remoteVer = r.ver; return; }
+    var ver = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    var res = await remotePut({ base: r.ver, ver: ver, auth: k.auth, data: await sealSet(k, salt, iter, m) });
+    if (res.ok) { remoteVer = ver; return; }
+    if (res.err === "auth") throw new Error("pwd");
+    if (res.err !== "stale") throw new Error("net");
+  }
+  throw new Error("net");
+}
+function setSync(s) { if (syncState !== s) { syncState = s; renderStatus(); } }
+function queueSync() {
+  if (!SYNC_URL || !syncPwd) return;
+  if (syncBusy) { syncAgain = true; return; }
+  syncBusy = true;
+  syncNow(syncPwd).then(function () { setSync("ok"); }, function (e) {
+    if (e.message === "pwd") {          // the password was changed from another phone
+      syncPwd = ""; lsSet(PWD_KEY, ""); setSync("off"); showLock(L("الباسورد غلط"), false);
+    } else setSync("offline");
+  }).then(function () {
+    syncBusy = false;
+    if (syncAgain) { syncAgain = false; queueSync(); }
+  });
+}
+/* While the app is open, look every half minute for something another phone saved */
+function pollSync() {
+  if (document.hidden || !SYNC_URL || !syncPwd || syncBusy) return;
+  if (syncState === "offline") { queueSync(); return; }
+  remoteGet(true).then(function (r) { if (r.ver !== remoteVer) queueSync(); }, function () { setSync("offline"); });
+}
+
+function lockNote() {
+  $("lockNote").textContent = lockFirst
+    ? L("اختار باسورد. هتكتب نفس الباسورد مرة واحدة على كل تليفون من تليفوناتك.")
+    : L("مرة واحدة بس على الموبايل ده، وبعدها أماكنك تتزامن على كل تليفوناتك.");
+}
+function showLock(err, first) {
+  lockFirst = !!first; lockNote();
   $("lock").hidden = false;
   $("pwdErr").textContent = err; $("pwdErr").hidden = !err;
-}
-/* Bring the shared places down when GitHub has a version this phone has not taken yet */
-async function syncShared() {
-  if (!window.crypto || !crypto.subtle) return;
-  try {
-    var r = await fetch("places.enc", { cache: "no-cache" });
-    if (!r.ok) return;
-    BUNDLE = await r.json();
-  } catch (e) { return; }
-  if (!BUNDLE || !BUNDLE.ver || lsGet(SHARED_KEY) === BUNDLE.ver) return;
-  var pwd = lsGet(PWD_KEY);
-  if (pwd) unlock(pwd); else showLock("");
-}
-async function unlock(pwd) {
-  try {
-    var data = await decryptBundle(BUNDLE, pwd);
-    var v = data.backup, arr = Array.isArray(v) ? v : v && v.places;
-    var n = mergePlaces(Array.isArray(arr) ? arr : []);
-    lsSet(PWD_KEY, pwd); lsSet(SHARED_KEY, BUNDLE.ver);
-    $("lock").hidden = true; $("pwd").value = "";
-    if (n) toast(T("أماكنك نزلت: {0}", countLabel(n)));
-  } catch (e) {
-    showLock(L(e.message === "pwd" ? "الباسورد غلط" : "حصلت مشكلة في قراءة الأماكن"));
-  }
-  $("pwdGo").disabled = false;
 }
 $("pwdForm").addEventListener("submit", function (e) {
   e.preventDefault();
   var v = $("pwd").value;
-  if (!v || !BUNDLE) return;
-  $("pwdGo").disabled = true;
-  unlock(v);
+  if (!v || syncBusy) return;
+  if (v.length < 3) { showLock(L("الباسورد غلط"), lockFirst); return; }
+  $("pwdGo").disabled = true; syncBusy = true;
+  syncNow(v).then(function () {
+    syncPwd = v; lsSet(PWD_KEY, v);
+    $("lock").hidden = true; $("pwd").value = "";
+    setSync("ok");
+    toast(L("تمام. أماكنك بتتزامن على كل تليفوناتك."));
+  }, function (err) {
+    showLock(L(err.message === "pwd" ? "الباسورد غلط" : "مفيش اتصال. جرّب تاني."), lockFirst);
+  }).then(function () {
+    $("pwdGo").disabled = false; syncBusy = false;
+    if (syncAgain) { syncAgain = false; queueSync(); }
+  });
 });
 $("pwdLater").addEventListener("click", function () { $("lock").hidden = true; });
+function startSync() {
+  if (!SYNC_URL || !window.crypto || !crypto.subtle) return;
+  syncPwd = lsGet(PWD_KEY);
+  if (syncPwd) queueSync();
+  else remoteGet(true).then(function (r) { showLock("", !r.ver); }, function () { showLock("", false); });
+  setInterval(pollSync, 30000);
+  document.addEventListener("visibilitychange", pollSync);
+  window.addEventListener("online", queueSync);
+}
 
 buildChips();
 render();
 boot();
-syncShared();
+startSync();
 if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
 </script>
 </body>

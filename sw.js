@@ -1,5 +1,5 @@
 // FAV Places offline cache. Bump VERSION when files change.
-const VERSION = 'fav-places-v5';
+const VERSION = 'fav-places-v7';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(CORE)).then(() => self.skipWaiting()));
@@ -10,8 +10,8 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET') return;
-  // the shared places always come fresh from GitHub
-  if (new URL(req.url).pathname.endsWith('/places.enc')) return;
+  // the sync store (Google Apps Script) must never be answered from the cache
+  if (/(^|\.)google(usercontent)?\.com$/.test(new URL(req.url).hostname)) return;
   // app page: network first so updates arrive, cache when offline
   if (req.mode === 'navigate') {
     e.respondWith(fetch(req).then(r => { const c = r.clone(); caches.open(VERSION).then(x => x.put('index.html', c)); return r; })
