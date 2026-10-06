@@ -274,6 +274,19 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
     </div>
   </header>
 
+  <section id="lock" class="saver" aria-labelledby="lockTitle" hidden>
+    <h2 id="lockTitle">اكتب الباسورد</h2>
+    <p>مرة واحدة بس على الموبايل ده، علشان أماكنك المسجّلة تنزل هنا.</p>
+    <form id="pwdForm" class="step">
+      <input id="pwd" class="text-input" type="password" autocomplete="current-password" placeholder="الباسورد">
+      <p id="pwdErr" class="err" hidden></p>
+      <div class="row-btns">
+        <button id="pwdGo" class="btn pin" type="submit">فتح</button>
+        <button id="pwdLater" class="btn ghost" type="button">بعدين</button>
+      </div>
+    </form>
+  </section>
+
   <form id="goForm" class="go" autocomplete="off">
     <label for="q" class="lbl">عاوز تروح فين؟</label>
     <div class="field">
@@ -425,7 +438,16 @@ var EN = {
   "حدّث «{0}»": "Update “{0}”",
   "اتسجّل «{0}»": "Saved “{0}”",
   "رايحين «{0}»…": "Heading to “{0}”…",
-  "اترجّع: {0}": "Restored: {0}"
+  "اترجّع: {0}": "Restored: {0}",
+  "مفيش أماكن جديدة في الملف.": "No new places in the file.",
+  "اكتب الباسورد": "Enter the password",
+  "مرة واحدة بس على الموبايل ده، علشان أماكنك المسجّلة تنزل هنا.": "Only once on this phone, to bring your saved places here.",
+  "الباسورد": "Password",
+  "فتح": "Open",
+  "بعدين": "Later",
+  "الباسورد غلط": "Wrong password",
+  "حصلت مشكلة في قراءة الأماكن": "Couldn't read the places",
+  "أماكنك نزلت: {0}": "Your places arrived: {0}"
 };
 var LANG_KEY = "fav-places.lang";
 var LANG = "en";
@@ -1032,36 +1054,100 @@ $("importFile").addEventListener("change", function () {
   var fr = new FileReader();
   fr.onload = function () {
     try {
-      var v = JSON.parse(fr.result), arr = Array.isArray(v) ? v : v && v.places, ok = 0;
+      var v = JSON.parse(fr.result), arr = Array.isArray(v) ? v : v && v.places;
       if (!Array.isArray(arr)) throw new Error("shape");
-      arr.forEach(function (p) {
-        if (!p || typeof p.name !== "string" || !p.name.trim()) return;
-        var c = {
-          id: "l" + Date.now().toString(36) + ok, kind: "place", name: p.name.trim().slice(0, 60),
-          lat: typeof p.lat === "number" ? p.lat : null, lng: typeof p.lng === "number" ? p.lng : null,
-          link: typeof p.link === "string" && isMapsHost(p.link) ? p.link : null,
-          query: typeof p.query === "string" ? p.query.slice(0, 200) : null,
-          createdAt: +p.createdAt || Date.now(), usedAt: +p.usedAt || 0
-        };
-        if (c.lat !== null && !validLL(c.lat, c.lng)) return;
-        if (c.lat === null && !c.link && !c.query) return;
-        var d = findDupe(c.name);
-        if (d) { c.id = d.id; places = places.map(function (x) { return x.id === d.id ? c : x; }); }
-        else places = places.concat([c]);
-        ok++;
-      });
-      if (mode === "device" && !writeLocal()) mode = "memory";
-      render();
-      toast(ok ? T("اترجّع: {0}", countLabel(ok)) : L("الملف مفيهوش أماكن."));
+      var ok = mergePlaces(arr);
+      toast(ok ? T("اترجّع: {0}", countLabel(ok)) : L("مفيش أماكن جديدة في الملف."));
     } catch (e) { toast(L("الملف ده مش نسخة احتياطية سليمة.")); }
     inp.value = "";
   };
   fr.readAsText(f);
 });
+/* Adds the places of a backup to this phone. A place with a name that is
+   already here takes the backup's location. Returns how many came in. */
+function mergePlaces(arr) {
+  var ok = 0;
+  arr.forEach(function (p) {
+    if (!p || typeof p.name !== "string" || !p.name.trim()) return;
+    var c = {
+      id: "l" + Date.now().toString(36) + ok, kind: "place", name: p.name.trim().slice(0, 60),
+      lat: typeof p.lat === "number" ? p.lat : null, lng: typeof p.lng === "number" ? p.lng : null,
+      link: typeof p.link === "string" && isMapsHost(p.link) ? p.link : null,
+      query: typeof p.query === "string" ? p.query.slice(0, 200) : null,
+      createdAt: +p.createdAt || Date.now(), usedAt: +p.usedAt || 0
+    };
+    if (c.lat !== null && !validLL(c.lat, c.lng)) return;
+    if (c.lat === null && !c.link && !c.query) return;
+    var d = findDupe(c.name);
+    if (d && d.lat === c.lat && d.lng === c.lng && (d.link || null) === c.link && (d.query || null) === c.query) return;
+    if (d) { c.id = d.id; places = places.map(function (x) { return x.id === d.id ? c : x; }); }
+    else places = places.concat([c]);
+    ok++;
+  });
+  if (mode === "device" && !writeLocal()) mode = "memory";
+  render();
+  return ok;
+}
+
+/* ---------- shared places: places.enc on GitHub, encrypted with the user's password ---------- */
+var PWD_KEY = "fav-places.pwd", SHARED_KEY = "fav-places.shared";
+var BUNDLE = null;
+function lsGet(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+async function decryptBundle(b, pwd) {
+  var b64 = function (s) { return Uint8Array.from(atob(s), function (c) { return c.charCodeAt(0); }); };
+  var base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pwd), "PBKDF2", false, ["deriveBits"]);
+  var bits = new Uint8Array(await crypto.subtle.deriveBits(
+    { name: "PBKDF2", salt: b64(b.salt), iterations: b.iter, hash: "SHA-256" }, base, 512));
+  var iv = b64(b.iv), ct = b64(b.ct), signed = new Uint8Array(iv.length + ct.length);
+  signed.set(iv); signed.set(ct, iv.length);
+  var macKey = await crypto.subtle.importKey("raw", bits.slice(32), { name: "HMAC", hash: "SHA-256" }, false, ["verify"]);
+  if (!await crypto.subtle.verify("HMAC", macKey, b64(b.mac), signed)) throw new Error("pwd");
+  var aesKey = await crypto.subtle.importKey("raw", bits.slice(0, 32), "AES-CBC", false, ["decrypt"]);
+  return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({ name: "AES-CBC", iv: iv }, aesKey, ct)));
+}
+function showLock(err) {
+  $("lock").hidden = false;
+  $("pwdErr").textContent = err; $("pwdErr").hidden = !err;
+}
+/* Bring the shared places down when GitHub has a version this phone has not taken yet */
+async function syncShared() {
+  if (!window.crypto || !crypto.subtle) return;
+  try {
+    var r = await fetch("places.enc", { cache: "no-cache" });
+    if (!r.ok) return;
+    BUNDLE = await r.json();
+  } catch (e) { return; }
+  if (!BUNDLE || !BUNDLE.ver || lsGet(SHARED_KEY) === BUNDLE.ver) return;
+  var pwd = lsGet(PWD_KEY);
+  if (pwd) unlock(pwd); else showLock("");
+}
+async function unlock(pwd) {
+  try {
+    var data = await decryptBundle(BUNDLE, pwd);
+    var v = data.backup, arr = Array.isArray(v) ? v : v && v.places;
+    var n = mergePlaces(Array.isArray(arr) ? arr : []);
+    lsSet(PWD_KEY, pwd); lsSet(SHARED_KEY, BUNDLE.ver);
+    $("lock").hidden = true; $("pwd").value = "";
+    if (n) toast(T("أماكنك نزلت: {0}", countLabel(n)));
+  } catch (e) {
+    showLock(L(e.message === "pwd" ? "الباسورد غلط" : "حصلت مشكلة في قراءة الأماكن"));
+  }
+  $("pwdGo").disabled = false;
+}
+$("pwdForm").addEventListener("submit", function (e) {
+  e.preventDefault();
+  var v = $("pwd").value;
+  if (!v || !BUNDLE) return;
+  $("pwdGo").disabled = true;
+  unlock(v);
+});
+$("pwdLater").addEventListener("click", function () { $("lock").hidden = true; });
 
 buildChips();
 render();
 boot();
+syncShared();
 if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
 </script>
 </body>
