@@ -8,6 +8,12 @@
   "scope": "./",
   "id": "./",
   "display": "standalone",
+  "share_target": {
+    "action": "share",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {"title": "title", "text": "text", "url": "url"}
+  },
   "orientation": "portrait",
   "background_color": "#EDF0F3",
   "theme_color": "#14549F",

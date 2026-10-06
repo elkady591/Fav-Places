@@ -316,6 +316,10 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
       <p>بحدّد مكانك…</p>
     </div>
 
+    <div id="stepFetch" class="step" hidden>
+      <p>بجيب المكان من جوجل مابس…</p>
+    </div>
+
     <div id="stepPaste" class="step" hidden>
       <p>ماقدرتش أحدّد مكانك تلقائي. اسمح للصفحة بالموقع من المتصفح وجرّب تاني، أو هات المكان من جوجل مابس:</p>
       <button id="retryGeo" class="linklike" type="button">حدّد مكاني تلقائي تاني</button>
@@ -449,6 +453,8 @@ var EN = {
   "رايحين «{0}»…": "Heading to “{0}”…",
   "اترجّع: {0}": "Restored: {0}",
   "كل الأماكن المسجّلة": "All saved places",
+  "بجيب المكان من جوجل مابس…": "Getting the place from Google Maps…",
+  "ماقدرتش أقرا مكان من اللي اتبعت. الصق الإحداثيات هنا.": "Couldn't read a place from what was shared. Paste the coordinates here.",
   "آخر الأماكن": "Recent places",
   "رجوع": "Back",
   "لسه مفيش أماكن فتحتها": "No recent places yet",
@@ -859,6 +865,7 @@ function renderStatus() {
 /* ---------- save flow ---------- */
 function showStep(name) {
   $("stepLocating").hidden = name !== "locating";
+  $("stepFetch").hidden = name !== "fetch";
   $("stepPaste").hidden = name !== "paste";
   $("stepName").hidden = name !== "name";
   if (name === "paste") {
@@ -1325,10 +1332,67 @@ function startSync() {
   window.addEventListener("online", queueSync);
 }
 
+/* ---------- shared from Google Maps: Share -> FAV Places ----------
+   The service worker keeps what was shared on the phone and reopens the app
+   with ?shared=1. A short maps.app.goo.gl link holds no coordinates, so the
+   sync store follows it and sends back the full link. */
+function placeNameFromUrl(u) {
+  var m = String(u).match(/\/maps\/place\/([^\/@?]+)/), n = "";
+  if (!m) return "";
+  try { n = decodeURIComponent(m[1].replace(/\+/g, " ")).trim(); } catch (e) {}
+  return /°|^-?\d+\.\d+\s*,/.test(n) ? "" : n.slice(0, 60);
+}
+function sharedName(data) {
+  var lines = [data.title, data.text].join("\n").split("\n").map(function (s) { return s.trim(); }).filter(function (s) {
+    return s && !/https?:\/\//i.test(s) && !/°/.test(s) && !/^-?\d+\.\d+\s*,\s*-?\d+\.\d+$/.test(s) &&
+      !/^(dropped pin|near |دبوس|بالقرب من )/i.test(s);
+  });
+  return (lines[0] || "").slice(0, 60);
+}
+async function takeShared(data) {
+  var loc = parseLocation([data.title, data.text, data.url].filter(Boolean).join("\n"));
+  setView("home");
+  draft = { loc: null, name: sharedName(data), byVoice: false };
+  var mine = draft;
+  saverEl.hidden = false;
+  if (loc && loc.kind === "link" && SYNC_URL) {
+    showStep("fetch");
+    try {
+      var r = await remotePut({ resolve: loc.link });
+      if (draft !== mine) return;
+      if (r && r.ok) {
+        var full = parseLocation(r.url);
+        if (full && full.kind === "coords") loc = full;
+        else if (typeof r.lat === "number" && validLL(r.lat, r.lng)) loc = { kind: "coords", lat: r.lat, lng: r.lng };
+        if (!draft.name) draft.name = placeNameFromUrl(r.url);
+      }
+    } catch (e) { if (draft !== mine) return; }
+  }
+  if (!loc || loc.kind === "error") {
+    showStep("paste");
+    $("locErr").textContent = L("ماقدرتش أقرا مكان من اللي اتبعت. الصق الإحداثيات هنا."); $("locErr").hidden = false;
+    return;
+  }
+  draft.loc = loc;
+  showStep("name");
+}
+function checkShared() {
+  if (!/[?&]shared=1/.test(location.search) || !window.caches) return;
+  history.replaceState(null, "", location.pathname);
+  caches.open("fav-places-share").then(function (c) {
+    return c.match("shared").then(function (r) {
+      if (!r) return null;
+      c.delete("shared");
+      return r.json();
+    });
+  }).then(function (d) { if (d) takeShared(d); }).catch(function () {});
+}
+
 buildChips();
 render();
 boot();
 startSync();
+checkShared();
 if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
 </script>
 </body>
