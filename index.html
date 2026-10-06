@@ -379,6 +379,11 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
     <button id="importBtn" class="btn ghost small" type="button">استرجع نسخة</button>
     <input id="importFile" type="file" accept="application/json,.json" hidden>
   </div>
+  <section id="snaps" class="list-wrap" aria-labelledby="snapsTitle" hidden>
+    <h2 id="snapsTitle">نسخ يومية محفوظة</h2>
+    <p class="note">لو مكان اتمسح بالغلط، دوس على يوم المسح أو يوم قبله علشان يرجع. الأماكن الموجودة مابتتغيّرش.</p>
+    <div id="snapList" class="chips"></div>
+  </section>
   <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
 </main>
 
@@ -453,6 +458,11 @@ var EN = {
   "رايحين «{0}»…": "Heading to “{0}”…",
   "اترجّع: {0}": "Restored: {0}",
   "كل الأماكن المسجّلة": "All saved places",
+  "نسخ يومية محفوظة": "Daily copies",
+  "لو مكان اتمسح بالغلط، دوس على يوم المسح أو يوم قبله علشان يرجع. الأماكن الموجودة مابتتغيّرش.": "If a place was deleted by mistake, tap the day it was deleted or a day before to bring it back. The places you have now are not changed.",
+  "رجع: {0}": "Brought back: {0}",
+  "مفيش أماكن ناقصة عن نسخة اليوم ده.": "Nothing is missing compared with that day's copy.",
+  "ماقدرتش أفتح النسخة دي.": "Couldn't open that copy.",
   "بجيب المكان من جوجل مابس…": "Getting the place from Google Maps…",
   "ماقدرتش أقرا مكان من اللي اتبعت. الصق الإحداثيات هنا.": "Couldn't read a place from what was shared. Paste the coordinates here.",
   "آخر الأماكن": "Recent places",
@@ -1016,6 +1026,8 @@ $("saveHere").addEventListener("click", function () { openSaver(""); });
 function setView(v) {
   view = v; editingId = null; confirmDeleteId = null;
   if (v === "all") closeSaver();
+  $("snaps").hidden = true;
+  if (v === "all") loadSnaps();
   render();
   window.scrollTo(0, 0);
 }
@@ -1291,6 +1303,45 @@ function pollSync() {
   if (document.hidden || !SYNC_URL || !syncPwd || syncBusy) return;
   if (syncState === "offline") { queueSync(); return; }
   remoteGet(true).then(function (r) { if (r.ver !== remoteVer) queueSync(); }, function () { setSync("offline"); });
+}
+
+/* The store keeps the copy as it was before each day's first change (7 days).
+   A day's copy brings back the places that are missing now; it removes nothing. */
+async function loadSnaps() {
+  if (!SYNC_URL || !syncPwd) return;
+  try {
+    var r = await (await fetch(syncUrl("snaps=1"), { cache: "no-store" })).json();
+    if (view !== "all" || !Array.isArray(r.days) || !r.days.length) return;
+    $("snapList").replaceChildren();
+    r.days.slice().reverse().forEach(function (day) {
+      var c = el("button", "chip", day); c.type = "button"; c.dir = "ltr";
+      c.addEventListener("click", function () { restoreSnap(day, c); });
+      $("snapList").appendChild(c);
+    });
+    $("snaps").hidden = false;
+  } catch (e) {}
+}
+async function restoreSnap(day, btn) {
+  btn.disabled = true;
+  try {
+    var r = await (await fetch(syncUrl("snap=" + day), { cache: "no-store" })).json();
+    var blob = JSON.parse(r.data);
+    var set = await openSet(await deriveKeys(syncPwd, blob.salt, blob.iter), blob);
+    var now = Date.now(), n = 0;
+    set.places.forEach(function (p) {
+      if (!p || !p.id || !p.name) return;
+      if (places.some(function (x) { return x.id === p.id; }) || findDupe(p.name)) return;
+      places = places.concat([Object.assign({}, p, { updatedAt: now })]);
+      n++;
+    });
+    if (n) {
+      if (mode === "device" && !writeLocal()) mode = "memory";
+      render();
+      queueSync();
+    }
+    toast(n ? T("رجع: {0}", countLabel(n)) : L("مفيش أماكن ناقصة عن نسخة اليوم ده."));
+  } catch (e) { toast(L("ماقدرتش أفتح النسخة دي.")); }
+  btn.disabled = false;
 }
 
 function lockNote() {

@@ -1,5 +1,5 @@
 // FAV Places offline cache. Bump VERSION when files change.
-const VERSION = 'fav-places-v8';
+const VERSION = 'fav-places-v9';
 const SHARE = 'fav-places-share';   // what Google Maps shared, kept until the page reads it
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
 self.addEventListener('install', e => {
