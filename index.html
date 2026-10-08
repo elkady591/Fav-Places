@@ -228,12 +228,13 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
 .plate-name { font-family: var(--font-display); font-weight: 700; font-size: 1.375rem; line-height: 1.35; overflow-wrap: anywhere; }
 .plate-sub { color: var(--sign-sub); font-size: 0.8125rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .plate-go { display: flex; align-items: center; gap: 6px; font-size: 0.875rem; font-weight: 500; flex: none; }
-.more {
+.more, .share {
   flex: none; width: 44px;
   background: var(--surface); color: var(--muted);
   border: 1.5px solid var(--line); border-radius: var(--radius);
   font-size: 1.25rem; line-height: 1; cursor: pointer;
 }
+.share { display: grid; place-items: center; padding: 0; }
 .edit {
   flex-basis: 100%;
   background: var(--surface);
@@ -262,8 +263,8 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
   font-weight: 500; text-align: center;
 }
 @media (prefers-reduced-motion: no-preference) {
-  .btn, .plate, .more, .chip { transition: transform 0.08s ease; }
-  .btn:active, .plate:active, .more:active, .chip:active { transform: scale(0.985); }
+  .btn, .plate, .more, .share, .chip { transition: transform 0.08s ease; }
+  .btn:active, .plate:active, .more:active, .share:active, .chip:active { transform: scale(0.985); }
 }
 </style>
 </head>
@@ -442,6 +443,9 @@ var EN = {
   "الملف ده مش نسخة احتياطية سليمة.": "That file isn't a valid backup.",
   "وجّهني على {0}": "Navigate to {0}",
   "تعديل {0}": "Edit {0}",
+  "ابعت {0}": "Share {0}",
+  "اللينك اتنسخ. الصقه في أي رسالة.": "Link copied. Paste it into any message.",
+  "ماقدرتش أبعت المكان.": "Couldn't share the place.",
   "اتمسح «{0}»": "Deleted “{0}”",
   "سجّل مكاني باسم «{0}»": "Save my location as “{0}”",
   "مفيش مكان مسجّل بالاسم «{0}».": "No saved place named “{0}”.",
@@ -606,6 +610,27 @@ function dirUrl(p) {
   if (p.query) return base + encodeURIComponent(p.query);
   return "https://www.google.com/maps";
 }
+/* A link to send to someone else: it opens the place itself, not directions from where they are */
+function shareUrl(p) {
+  if (typeof p.lat === "number" && typeof p.lng === "number") return "https://www.google.com/maps/search/?api=1&query=" + p.lat + "," + p.lng;
+  if (p.link && isMapsHost(p.link)) return p.link;
+  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(p.query || p.name);
+}
+function sharePlace(p) {
+  var url = shareUrl(p);
+  if (navigator.share) {
+    navigator.share({ title: p.name, text: p.name, url: url }).catch(function (e) {
+      if (!e || e.name !== "AbortError") copyShare(p, url);
+    });
+  } else copyShare(p, url);
+}
+function copyShare(p, url) {
+  var text = p.name + "\n" + url;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function () { toast(L("اللينك اتنسخ. الصقه في أي رسالة.")); },
+      function () { toast(L("ماقدرتش أبعت المكان.")); });
+  } else toast(L("ماقدرتش أبعت المكان."));
+}
 function searchUrl(text) {
   return "https://www.google.com/maps/dir/?api=1&travelmode=driving&destination=" + encodeURIComponent(text);
 }
@@ -642,6 +667,8 @@ function el(tag, cls, text) {
   return e;
 }
 var ARROW = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 12H5"/><path d="M11 6l-6 6 6 6"/></svg>';
+
+var SHARE_ICON = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4"/><path d="M15.4 6.5l-6.8 4"/></svg>';
 
 var toastTimer = 0;
 function toast(msg) {
@@ -765,6 +792,13 @@ function rowEl(p, best) {
   li.appendChild(a);
 
   var open = editingId === p.id;
+  var share = el("button", "share");
+  share.type = "button";
+  share.setAttribute("aria-label", T("ابعت {0}", p.name));
+  share.innerHTML = SHARE_ICON;
+  share.addEventListener("click", function () { sharePlace(p); });
+  li.appendChild(share);
+
   var more = el("button", "more", "⋯");
   more.type = "button";
   more.setAttribute("aria-label", T("تعديل {0}", p.name));
