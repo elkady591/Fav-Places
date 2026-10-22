@@ -11,7 +11,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="FAV Places">
 <title>FAV Places</title>
-<script>try { var s = localStorage.getItem("fav-places.skin"); if (s) document.documentElement.setAttribute("data-skin", s); } catch (e) {}</script>
+<script>try { var s = localStorage.getItem("fav-places.skin") || "", a = localStorage.getItem("fav-places.accent." + (s || "classic"));
+  if (s) document.documentElement.setAttribute("data-skin", s); if (a) document.documentElement.style.setProperty("--accent", a); } catch (e) {}</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Reem+Kufi:wght@500;700&display=swap">
 <style>
 /* Layout: one narrow column you can use with a thumb. Command box on top,
@@ -22,11 +23,12 @@
   --ink: #13202C;
   --muted: #586673;
   --line: #CDD5DC;
-  --sign: #14549F;
+  --accent: #14549F;
+  --sign: var(--accent);
   --sign-ink: #FFFFFF;
-  --sign-sub: #CFE0F5;
-  --sign-edge: #E6EFFA;
-  --sign-soft: #E1EBF7;
+  --sign-sub: color-mix(in srgb, var(--accent) 18%, white);
+  --sign-edge: color-mix(in srgb, var(--accent) 8%, white);
+  --sign-soft: color-mix(in srgb, var(--accent) 13%, white);
   --pin: #E9A400;
   --pin-ink: #2A1D00;
   --danger: #B3261E;
@@ -41,11 +43,11 @@
     --ink: #E8EEF3;
     --muted: #94A2AF;
     --line: #2C3945;
-    --sign: #1B5FB3;
+    --sign: var(--accent);
     --sign-ink: #FFFFFF;
-    --sign-sub: #C7DCF5;
-    --sign-edge: #D5E5F8;
-    --sign-soft: #172A3F;
+    --sign-sub: color-mix(in srgb, var(--accent) 18%, white);
+    --sign-edge: color-mix(in srgb, var(--accent) 12%, white);
+    --sign-soft: color-mix(in srgb, var(--accent) 28%, #0E151C);
     --pin: #F2B632;
     --pin-ink: #231800;
     --danger: #F2867E;
@@ -58,68 +60,82 @@
   --ink: #E8EEF3;
   --muted: #94A2AF;
   --line: #2C3945;
-  --sign: #1B5FB3;
+  --sign: var(--accent);
   --sign-ink: #FFFFFF;
-  --sign-sub: #C7DCF5;
-  --sign-edge: #D5E5F8;
-  --sign-soft: #172A3F;
+  --sign-sub: color-mix(in srgb, var(--accent) 18%, white);
+  --sign-edge: color-mix(in srgb, var(--accent) 12%, white);
+  --sign-soft: color-mix(in srgb, var(--accent) 28%, #0E151C);
   --pin: #F2B632;
   --pin-ink: #231800;
   --danger: #F2867E;
   color-scheme: dark;
 }
 
-/* Themes (gear -> Theme). "Classic blue" is the default above and follows the phone's
-   light/dark setting; every other theme has its own fixed look. */
+/* Themes (gear -> Theme). Each theme has its own layout and a default colour (--accent);
+   the colour picked under it (gear -> Color) replaces that default. "Classic" follows the
+   phone's light/dark setting; the others keep their own look. */
 :root[data-skin] { color-scheme: light; }
 :root[data-skin="night"] {
+  --accent: #00D1FF; --glow: color-mix(in srgb, var(--accent) 65%, white);
   --bg: #05070A; --surface: #0E131A; --ink: #E6F1FF; --muted: #8A97A8; --line: #1E2833;
-  --sign: #0B1118; --sign-ink: #E6F1FF; --sign-sub: #7FE7FF; --sign-edge: #00D1FF; --sign-soft: #0F2230;
-  --pin: #00D1FF; --pin-ink: #001018; --danger: #FF7A7A; color-scheme: dark;
+  --sign: #0B1118; --sign-ink: #E6F1FF; --sign-sub: var(--glow); --sign-edge: var(--glow);
+  --sign-soft: color-mix(in srgb, var(--accent) 16%, #0B1118);
+  --pin: var(--glow); --pin-ink: #001018; --danger: #FF7A7A; color-scheme: dark;
 }
-:root[data-skin="night"] .plate { box-shadow: inset 0 0 0 1.5px var(--sign-edge), 0 0 18px rgba(0, 209, 255, 0.22); }
+:root[data-skin="night"] .plate { box-shadow: inset 0 0 0 1.5px var(--sign-edge), 0 0 18px color-mix(in srgb, var(--glow) 25%, transparent); }
 :root[data-skin="sand"] {
+  --accent: #B5562B;
   --bg: #F4ECDD; --surface: #FFF9EF; --ink: #3B2A1A; --muted: #7A6650; --line: #E2D3BC;
-  --sign: #EBDCC2; --sign-ink: #3B2A1A; --sign-sub: #7A6650; --sign-edge: #C8A878; --sign-soft: #EADBC2;
-  --pin: #B5562B; --pin-ink: #FFF7EE; --danger: #A33A20; --radius: 18px;
+  --sign: color-mix(in srgb, var(--accent) 10%, #EEE0C6); --sign-ink: #3B2A1A; --sign-sub: #7A6650;
+  --sign-edge: color-mix(in srgb, var(--accent) 45%, #E6D3B2); --sign-soft: color-mix(in srgb, var(--accent) 14%, #F4ECDD);
+  --pin: var(--accent); --pin-ink: #FFF7EE; --danger: #A33A20; --radius: 18px;
 }
 :root[data-skin="minimal"] {
+  --accent: #2563EB;
   --bg: #FFFFFF; --surface: #F4F6F8; --ink: #111418; --muted: #5F6670; --line: #E4E7EB;
-  --sign: #FFFFFF; --sign-ink: #111418; --sign-sub: #5F6670; --sign-edge: #FFFFFF; --sign-soft: #EEF1F4;
+  --sign: #FFFFFF; --sign-ink: #111418; --sign-sub: #5F6670; --sign-edge: #FFFFFF;
+  --sign-soft: color-mix(in srgb, var(--accent) 10%, white);
   --pin: #111418; --pin-ink: #FFFFFF; --danger: #C62828; --radius: 14px; --font-display: var(--font-body);
 }
-:root[data-skin="minimal"] .plate { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.08); border-inline-start: 6px solid #2563EB; }
-:root[data-skin="minimal"] .row.best .plate { box-shadow: 0 0 0 2px #2563EB, 0 6px 16px rgba(0, 0, 0, 0.08); }
+:root[data-skin="minimal"] .plate { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.08); border-inline-start: 6px solid var(--accent); }
+:root[data-skin="minimal"] .row.best .plate { box-shadow: 0 0 0 2px var(--accent), 0 6px 16px rgba(0, 0, 0, 0.08); }
 :root[data-skin="pop"] {
+  --accent: #F25C54;
   --bg: #FFF8F0; --surface: #FFFFFF; --ink: #1F1A17; --muted: #6B625C; --line: #EADFD3;
-  --sign: #F25C54; --sign-ink: #FFFFFF; --sign-sub: #FFF1EE; --sign-edge: rgba(255, 255, 255, 0.5); --sign-soft: #FFE9E4;
-  --pin: #1A9E92; --pin-ink: #FFFFFF; --danger: #C62828; --radius: 22px;
+  --sign: var(--accent); --sign-ink: #FFFFFF; --sign-sub: #FFF1EE; --sign-edge: rgba(255, 255, 255, 0.5);
+  --sign-soft: color-mix(in srgb, var(--accent) 14%, white);
+  --pin: var(--accent); --pin-ink: #FFFFFF; --danger: #C62828; --radius: 22px;
 }
 :root[data-skin="pop"] #list > li:nth-child(4n+2) .plate { --sign: #1A9E92; }
 :root[data-skin="pop"] #list > li:nth-child(4n+3) .plate { --sign: #7357D1; }
 :root[data-skin="pop"] #list > li:nth-child(4n+4) .plate { --sign: #D9730D; }
 :root[data-skin="glass"] {
-  --bg: #2E1A6B; --surface: rgba(255, 255, 255, 0.14); --ink: #FFFFFF; --muted: rgba(255, 255, 255, 0.78); --line: rgba(255, 255, 255, 0.3);
+  --accent: #4F46E5;
+  --bg: color-mix(in srgb, var(--accent) 45%, #120A2E); --surface: rgba(255, 255, 255, 0.14); --ink: #FFFFFF; --muted: rgba(255, 255, 255, 0.78); --line: rgba(255, 255, 255, 0.3);
   --sign: rgba(255, 255, 255, 0.16); --sign-ink: #FFFFFF; --sign-sub: rgba(255, 255, 255, 0.82); --sign-edge: rgba(255, 255, 255, 0.4); --sign-soft: rgba(255, 255, 255, 0.18);
   --pin: #FDE047; --pin-ink: #1E1B4B; --danger: #FFB4B4; --radius: 18px; color-scheme: dark;
 }
-:root[data-skin="glass"] body { background: linear-gradient(165deg, #3A1C71 0%, #4F46E5 55%, #0EA5E9 100%) fixed; }
+:root[data-skin="glass"] body {
+  background: linear-gradient(165deg, color-mix(in srgb, var(--accent) 55%, #12062E) 0%, var(--accent) 55%, color-mix(in srgb, var(--accent) 55%, #0EA5E9) 100%) fixed;
+}
 :root[data-skin="glass"] .plate { -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
 /* "Modern": a different page, not just colours. A coloured header that the search box
    overlaps, and white cards with the icon in a coloured square. */
 :root[data-skin="tiles"] {
+  --accent: #FF5A5F;
   --bg: #F7F5F2; --surface: #FFFFFF; --ink: #1E1B18; --muted: #77706A; --line: #ECE7E1;
-  --sign: #FF5A5F; --sign-ink: #FFFFFF; --sign-sub: #77706A; --sign-edge: transparent; --sign-soft: #FFE8E8;
-  --pin: #FF5A5F; --pin-ink: #FFFFFF; --danger: #C62828; --radius: 20px;
+  --sign: var(--accent); --sign-ink: #FFFFFF; --sign-sub: #77706A; --sign-edge: transparent;
+  --sign-soft: color-mix(in srgb, var(--accent) 13%, white);
+  --pin: var(--accent); --pin-ink: #FFFFFF; --danger: #C62828; --radius: 20px;
 }
 :root[data-skin="tiles"] .top {
   margin: -20px -16px 0; padding: 22px 16px 22px;
-  background: linear-gradient(135deg, #FF7A59, #FF4E8A); border-radius: 0 0 28px 28px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 60%, #FFB36B), var(--accent)); border-radius: 0 0 28px 28px;
 }
 :root[data-skin="tiles"] .app:has(#homeBox:not([hidden])) .top { padding-bottom: 68px; }
 :root[data-skin="tiles"] .top h1 { color: #FFFFFF; }
 :root[data-skin="tiles"] .lang { background: rgba(255, 255, 255, 0.22); color: #FFFFFF; border-color: transparent; }
-:root[data-skin="tiles"] .lang[aria-pressed="true"] { background: #FFFFFF; color: #FF4E8A; }
+:root[data-skin="tiles"] .lang[aria-pressed="true"] { background: #FFFFFF; color: var(--accent); }
 :root[data-skin="tiles"] #goForm { margin-top: -56px; }
 :root[data-skin="tiles"] .go .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 :root[data-skin="tiles"] .field input { border: 0; border-radius: 999px; height: 58px; box-shadow: 0 10px 28px rgba(60, 20, 10, 0.16); }
@@ -127,7 +143,7 @@
 :root[data-skin="tiles"] .list-wrap h2 { font-size: 1.125rem; font-weight: 700; color: var(--ink); }
 :root[data-skin="tiles"] .row { position: relative; display: block; }
 :root[data-skin="tiles"] .plate {
-  gap: 12px; min-height: 76px; padding: 12px 104px 12px 12px; padding-inline: 12px 104px;
+  gap: 12px; min-height: 76px; padding: 12px; padding-inline: 12px 104px;
   background: var(--surface); color: var(--ink);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 8px 20px rgba(0, 0, 0, 0.07);
 }
@@ -150,9 +166,8 @@
 :root[data-skin="tiles"] .row .more { inset-inline-end: 12px; }
 :root[data-skin="tiles"] .row .share svg { width: 17px; height: 17px; }
 :root[data-skin="tiles"] .edit { margin-top: 10px; }
-
 /* where the theme's sign colour is too pale for a button or a selected chip, use its button colour */
-:root[data-skin="minimal"] .btn.sign { background: #2563EB; color: #FFFFFF; }
+:root[data-skin="minimal"] .btn.sign { background: var(--accent); color: #FFFFFF; }
 :root[data-skin="night"] .btn.sign { box-shadow: inset 0 0 0 1.5px var(--sign-edge); }
 :root[data-skin="minimal"] .lang[aria-pressed="true"], :root[data-skin="minimal"] .chip[aria-pressed="true"],
 :root[data-skin="night"] .lang[aria-pressed="true"], :root[data-skin="night"] .chip[aria-pressed="true"],
@@ -348,6 +363,13 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
 .sw { height: 58px; border-radius: 8px; padding: 8px; display: flex; flex-direction: column; justify-content: center; gap: 5px; }
 .sw b { display: block; height: 12px; border-radius: 4px; }
 .sw i { display: block; width: 22px; height: 8px; border-radius: 4px; }
+.colors { display: flex; flex-wrap: wrap; gap: 10px; }
+.color {
+  width: 40px; height: 40px; border-radius: 50%; border: 0; padding: 0; cursor: pointer;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.12);
+}
+.color[aria-pressed="true"] { outline: 3px solid var(--ink); outline-offset: 2px; }
+.color.auto { display: grid; place-items: center; color: #FFFFFF; font-size: 0.75rem; font-weight: 700; }
 /* the save button sits at the bottom of the screen, under the thumb */
 #saveHere.dock {
   position: fixed; z-index: 5; inset-inline: 16px; bottom: 0;
@@ -393,7 +415,7 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
 
 <main class="app">
   <header class="top">
-    <h1 dir="ltr">ELKADY FAMILY <span aria-hidden="true">👨‍👩‍👧</span></h1>
+    <h1 dir="ltr">ELKADY FAMILY <span aria-hidden="true">👨‍👩‍👧‍👦</span></h1>
     <p id="count" class="count" hidden></p>
     <div class="top-end">
       <button id="gearBtn" class="lang" type="button" aria-label="كل الأماكن المسجّلة"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
@@ -485,6 +507,8 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
   <section id="looks" class="list-wrap" aria-labelledby="looksTitle" hidden>
     <h2 id="looksTitle">الثيم</h2>
     <div id="skinList" class="skins"></div>
+    <h2 id="colorTitle">اللون</h2>
+    <div id="colorList" class="colors" role="group" aria-labelledby="colorTitle"></div>
   </section>
 
   <section class="list-wrap" aria-labelledby="listTitle">
@@ -587,6 +611,14 @@ var EN = {
   "جرّب اسم تاني.": "Try another name.",
   "الأيقونة": "Icon",
   "الثيم": "Theme",
+  "اللون": "Color",
+  "تلقائي (لون الثيم)": "Auto (the theme's colour)",
+  "سماوي": "Sky blue",
+  "تركواز": "Teal",
+  "أخضر": "Green",
+  "بنفسجي": "Purple",
+  "مرجاني": "Coral",
+  "برتقالي": "Orange",
   "أزرق كلاسيك": "Classic blue",
   "ليلي": "Night",
   "رملي": "Sand",
@@ -1304,7 +1336,11 @@ var SKIN_LIST = [
   ["glass", "زجاج", "linear-gradient(165deg, #3A1C71, #4F46E5 55%, #0EA5E9)", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.3)", "#FDE047", "rgba(255,255,255,0.5)"],
   ["tiles", "مودرن", "linear-gradient(180deg, #FF7A59 0 34%, #F7F5F2 34%)", "#FFFFFF", "#FFFFFF", "#FF5A5F", "#ECE7E1"]
 ];
-var BAR_OF = { "": "#14549F", night: "#05070A", sand: "#F4ECDD", minimal: "#FFFFFF", pop: "#F25C54", glass: "#3A1C71", tiles: "#FF7A59" };
+var DEFAULT_ACCENT = { "": "#14549F", night: "#00D1FF", sand: "#B5562B", minimal: "#2563EB", pop: "#F25C54", glass: "#4F46E5", tiles: "#FF5A5F" };
+var BAR_OF = { night: "#05070A", sand: "#F4ECDD", minimal: "#FFFFFF" };   // the rest colour the phone's top bar with the theme colour
+var COLORS = [["#14549F", "أزرق"], ["#2563EB", "سماوي"], ["#0F766E", "تركواز"], ["#1E6B3A", "أخضر"], ["#6D28D9", "بنفسجي"],
+  ["#BE185D", "وردي"], ["#FF5A5F", "مرجاني"], ["#C2410C", "برتقالي"], ["#334155", "رمادي"]];
+function accentKey(skin) { return "fav-places.accent." + (skin || "classic"); }
 function getPref(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
 function setPref(k, v) { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (e) {} }
 function applyLook() {
@@ -1312,8 +1348,10 @@ function applyLook() {
   if (!SKIN_LIST.some(function (s) { return s[0] === skin; })) skin = "";
   if (skin) root.setAttribute("data-skin", skin); else root.removeAttribute("data-skin");
   root.removeAttribute("data-theme"); setPref("fav-places.mode", "");
+  var accent = getPref(accentKey(skin));
+  if (accent) root.style.setProperty("--accent", accent); else root.style.removeProperty("--accent");
   var meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", BAR_OF[skin]);
+  if (meta) meta.setAttribute("content", BAR_OF[skin] || accent || DEFAULT_ACCENT[skin]);
 }
 function buildLooks() {
   var skin = getPref("fav-places.skin");
@@ -1331,6 +1369,17 @@ function buildLooks() {
     b.appendChild(sw); b.appendChild(el("span", null, L(s[1])));
     b.addEventListener("click", function () { setPref("fav-places.skin", s[0]); applyLook(); buildLooks(); });
     $("skinList").appendChild(b);
+  });
+  // the colours for the chosen theme; "A" keeps the theme's own colour
+  var cur = getPref(accentKey(skin));
+  $("colorList").replaceChildren();
+  [["", "تلقائي (لون الثيم)"]].concat(COLORS).forEach(function (c) {
+    var b = el("button", "color" + (c[0] ? "" : " auto"), c[0] ? null : "A"); b.type = "button";
+    b.style.background = c[0] || DEFAULT_ACCENT[skin];
+    b.setAttribute("aria-label", L(c[1])); b.title = L(c[1]);
+    b.setAttribute("aria-pressed", c[0] === cur ? "true" : "false");
+    b.addEventListener("click", function () { setPref(accentKey(skin), c[0]); applyLook(); buildLooks(); });
+    $("colorList").appendChild(b);
   });
 }
 $("backBtn").addEventListener("click", function () { setView("home"); });
