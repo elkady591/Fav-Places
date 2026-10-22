@@ -1,5 +1,5 @@
 // FAV Places offline cache. Bump VERSION when files change.
-const VERSION = 'fav-places-v17';
+const VERSION = 'fav-places-v20';
 const SHARE = 'fav-places-share';   // what Google Maps shared, kept until the page reads it
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
 self.addEventListener('install', e => {
@@ -23,6 +23,8 @@ self.addEventListener('fetch', e => {
   if (req.method !== 'GET') return;
   // the sync store (Google Apps Script) must never be answered from the cache
   if (/(^|\.)google(usercontent)?\.com$/.test(new URL(req.url).hostname)) return;
+  // driving distances always come fresh from the route service
+  if (new URL(req.url).hostname === 'router.project-osrm.org') return;
   // app page: network first so updates arrive, cache when offline
   if (req.mode === 'navigate') {
     e.respondWith(fetch(req).then(r => { const c = r.clone(); caches.open(VERSION).then(x => x.put('index.html', c)); return r; })

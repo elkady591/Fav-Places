@@ -330,14 +330,27 @@ button, input { font: inherit; color: inherit; }
 
 /* Header */
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.top-end { display: flex; align-items: center; gap: 8px; }
+.top-end { display: flex; align-items: center; gap: 6px; }
 .lang {
-  flex: none; width: 44px; height: 44px;
+  flex: none; width: 42px; height: 42px;
   background: var(--surface); color: var(--ink);
   border: 1.5px solid var(--line); border-radius: var(--radius);
   font-weight: 700; font-size: 1rem; line-height: 1; cursor: pointer;
 }
 .lang { display: grid; place-items: center; padding: 0; }
+/* the location button: a dot says how fresh "where am I" is */
+.locbtn { position: relative; }
+.locbtn::after {
+  content: ""; position: absolute; top: 4px; inset-inline-end: 4px;
+  width: 10px; height: 10px; border-radius: 50%; background: transparent;
+}
+.locbtn[data-state="ok"]::after { background: #16A34A; box-shadow: 0 0 0 2px var(--surface); }
+.locbtn[data-state="old"]::after { background: #F59E0B; box-shadow: 0 0 0 2px var(--surface); }
+.locbtn[data-state="off"]::after { background: #DC2626; box-shadow: 0 0 0 2px var(--surface); }
+@media (prefers-reduced-motion: no-preference) {
+  .locbtn[data-state="busy"] svg { animation: locspin 1s linear infinite; }
+}
+@keyframes locspin { to { transform: rotate(360deg); } }
 .lang[aria-pressed="true"] { background: var(--sign); color: var(--sign-ink); border-color: var(--sign); }
 .stack { display: flex; flex-direction: column; gap: 20px; }
 #backBtn { align-self: flex-start; }
@@ -574,6 +587,7 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
     <h1 dir="ltr">ELKADY FAMILY <span aria-hidden="true">👨‍👩‍👧‍👦</span></h1>
     <p id="count" class="count" hidden></p>
     <div class="top-end">
+      <button id="locBtn" class="lang locbtn" type="button" aria-label="حدّث مكاني" data-state="none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></button>
       <button id="gearBtn" class="lang" type="button" aria-label="كل الأماكن المسجّلة"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       <button id="langBtn" class="lang" type="button"></button>
     </div>
@@ -660,6 +674,14 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
   </div>
 
   <button id="backBtn" class="btn ghost small" type="button" hidden>رجوع</button>
+  <section id="homeOrder" class="list-wrap" aria-labelledby="homeOrderTitle" hidden>
+    <h2 id="homeOrderTitle">ترتيب الصفحة الرئيسية</h2>
+    <div class="chips" role="group" aria-labelledby="homeOrderTitle">
+      <button id="hs-near" class="chip" type="button" aria-pressed="false">الأقرب</button>
+      <button id="hs-recent" class="chip" type="button" aria-pressed="true">آخر استخدام</button>
+      <button id="hs-most" class="chip" type="button" aria-pressed="false">الأكتر استخدام</button>
+    </div>
+  </section>
   <section id="looks" class="list-wrap" aria-labelledby="looksTitle" hidden>
     <h2 id="looksTitle">الثيم</h2>
     <div id="skinList" class="skins"></div>
@@ -757,6 +779,17 @@ var EN = {
   "وجّهني على {0}": "Navigate to {0}",
   "تعديل {0}": "Edit {0}",
   "ابعت {0}": "Share {0}",
+  "حدّث مكاني": "Update my location",
+  "ترتيب الصفحة الرئيسية": "Home list order",
+  "الأقرب": "Nearest",
+  "آخر استخدام": "Recently used",
+  "الأكتر استخدام": "Most used",
+  "الأقرب ليك": "Nearest to you",
+  "د": "min",
+  "س": "h",
+  "مكانك اتحدّد (دقة {0})": "Location updated (accuracy {0})",
+  "اسمح للبرنامج بالموقع من إعدادات المتصفح.": "Allow location for this app in the browser settings.",
+  "ماقدرتش أحدد مكانك. جرّب تاني.": "Couldn't get your location. Try again.",
   "دوّر في أماكنك": "Search your places",
   "الترتيب": "Sort",
   "أبجدي": "A–Z",
@@ -1117,6 +1150,7 @@ async function removePlace(id) {
 }
 
 function boot() { useDevice(); }
+function markUsed(p) { patchPlace(p.id, { usedAt: Date.now(), uses: (p.uses || 0) + 1 }).catch(function () {}); }
 
 /* ---------- rendering ---------- */
 /* An icon guessed from the name; the user can pick another one under ⋯ */
@@ -1133,7 +1167,7 @@ var ICON_RULES = [
   ["🍽️", /cafe|coffee|restaurant|resturant|food|kebda|mo5|كافيه|مطعم|اكل|كبده/],
   ["🛒", /market|mall|shop|سوبر|ماركت|مول|محل/],
   ["🎓", /school|university|course|مدرسه|جامعه|كورس/],
-  ["⚓", /port\b|port |ميناء|مينا/],
+  ["⚓", /(^| )port( |$)|ميناء|مينا/],
   ["⛽", /petrol|fuel|gas station|بنزين/]
 ];
 var ICON_CHOICES = ["📍", "🏠", "💼", "🏗️", "🏋️", "⚽", "🚗", "⛽", "🏧", "🩺", "🍽️", "☕", "🛒", "🎓", "🕌", "⚓", "🏖️", "👤", "👨‍👩‍👧", "❤️"];
@@ -1144,15 +1178,29 @@ function placeIcon(p) {
   return "📍";
 }
 /* Where the phone is now, for the distance on each sign and "Nearest" */
-var here = null, hereAt = 0;
-function locateHere() {
-  if (!navigator.geolocation || Date.now() - hereAt < 60000) return;
-  hereAt = Date.now();
+var here = null, hereAt = 0, locBusy = false;
+/* force = the user tapped the location button: ask again now and say how it went */
+function locateHere(force) {
+  if (!navigator.geolocation) { setLocState("off"); return; }
+  if (locBusy || (!force && Date.now() - hereAt < 60000)) return;
+  hereAt = Date.now(); locBusy = true; setLocState("busy");
   navigator.geolocation.getCurrentPosition(function (pos) {
-    here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    locBusy = false;
+    here = { lat: pos.coords.latitude, lng: pos.coords.longitude, acc: pos.coords.accuracy || 0, at: Date.now() };
+    setLocState(here.acc <= 150 ? "ok" : "old");
+    if (force) { roads = {}; roadsFrom = null; roadPause = 0; }
+    if (force) toast(T("مكانك اتحدّد (دقة {0})", fmtDist(here.acc / 1000)));
     if (!editingId) render();
-  }, function () {}, { enableHighAccuracy: false, timeout: 10000, maximumAge: 120000 });
+  }, function (e) {
+    locBusy = false;
+    setLocState(here ? "old" : "off");
+    if (force) toast(L(e && e.code === 1 ? "اسمح للبرنامج بالموقع من إعدادات المتصفح." : "ماقدرتش أحدد مكانك. جرّب تاني."));
+  }, { enableHighAccuracy: true, timeout: 15000, maximumAge: force ? 0 : 30000 });
 }
+function setLocState(s) { $("locBtn").setAttribute("data-state", s); }
+$("locBtn").addEventListener("click", function () { locateHere(true); });
+// a location older than 5 minutes is shown as not fresh
+setInterval(function () { if (here && !locBusy && Date.now() - here.at > 300000) setLocState("old"); }, 30000);
 function distKm(p) {
   if (!here || typeof p.lat !== "number") return null;
   var r = Math.PI / 180, dLat = (p.lat - here.lat) * r, dLng = (p.lng - here.lng) * r;
@@ -1163,8 +1211,64 @@ function fmtDist(km) {
   if (km < 1) return Math.max(10, Math.round(km * 100) * 10) + " " + L("م");
   return (km < 10 ? km.toFixed(1) : String(Math.round(km))) + " " + L("كم");
 }
+/* Distance and time by car, from the free OSRM route service (router.project-osrm.org).
+   Until it answers, or when it can't, the sign shows the straight line with "≈". */
+var roads = {}, roadsFrom = null, roadPending = {}, roadPause = 0;
+function roadKm(p) {
+  var r = roads[p.id];
+  return r && r.lat === p.lat && r.lng === p.lng ? r : null;
+}
+function fmtMin(min) {
+  min = Math.max(1, Math.round(min));
+  if (min < 60) return min + " " + L("د");
+  return Math.floor(min / 60) + " " + L("س") + (min % 60 ? " " + (min % 60) + " " + L("د") : "");
+}
+function queueRoads(list) {
+  if (!here || Date.now() < roadPause) return;
+  // moved more than 200 m since the last answer: everything is asked again
+  if (!roadsFrom || distKm({ lat: roadsFrom.lat, lng: roadsFrom.lng }) > 0.2) { roads = {}; roadsFrom = { lat: here.lat, lng: here.lng }; }
+  var miss = list.filter(function (p) { return typeof p.lat === "number" && !roadKm(p) && !roadPending[p.id]; });
+  for (var i = 0; i < miss.length; i += 24) fetchRoads(miss.slice(i, i + 24));
+}
+function fetchRoads(batch) {
+  var from = { lat: roadsFrom.lat, lng: roadsFrom.lng };
+  batch.forEach(function (p) { roadPending[p.id] = true; });
+  var pts = [from].concat(batch).map(function (p) { return p.lng.toFixed(6) + "," + p.lat.toFixed(6); }).join(";");
+  fetch("https://router.project-osrm.org/table/v1/driving/" + pts + "?sources=0&annotations=distance,duration")
+    .then(function (r) { return r.json(); })
+    .then(function (j) {
+      if (!j || j.code !== "Ok") throw new Error("osrm");
+      if (!roadsFrom || roadsFrom.lat !== from.lat || roadsFrom.lng !== from.lng) return;   // moved meanwhile
+      batch.forEach(function (p, i) {
+        var m = j.distances[0][i + 1], s = j.durations[0][i + 1];
+        if (m !== null && s !== null) roads[p.id] = { km: m / 1000, min: s / 60, lat: p.lat, lng: p.lng };
+      });
+      if (!editingId) render();
+    })
+    .catch(function () { roadPause = Date.now() + 60000; })
+    .then(function () { batch.forEach(function (p) { delete roadPending[p.id]; }); });
+}
+/* The 10 places on the home page */
+var homeSort = getPref("fav-places.homeSort") || "recent";
+function homeList() {
+  if (homeSort === "near" && here) {
+    return places.filter(function (p) { return typeof p.lat === "number"; }).sort(function (a, b) {
+      var ra = roadKm(a), rb = roadKm(b);
+      return (ra ? ra.km : distKm(a)) - (rb ? rb.km : distKm(b));
+    }).slice(0, 10);
+  }
+  if (homeSort === "most") {
+    return places.filter(function (p) { return (p.uses || 0) > 0 || p.usedAt > 0; }).sort(function (a, b) {
+      return (b.uses || (b.usedAt ? 1 : 0)) - (a.uses || (a.usedAt ? 1 : 0)) || (b.usedAt || 0) - (a.usedAt || 0);
+    }).slice(0, 10);
+  }
+  return sorted(places.filter(function (p) { return p.usedAt > 0; })).slice(0, 10);
+}
 function subText(p) {
-  if (typeof p.lat === "number") { var d = distKm(p); return d === null ? "" : fmtDist(d); }
+  if (typeof p.lat === "number") {
+    var r = roadKm(p); if (r) return fmtDist(r.km) + " · " + fmtMin(r.min);
+    var d = distKm(p); return d === null ? "" : "≈ " + fmtDist(d);
+  }
   if (p.link) return L("لينك جوجل مابس");
   return p.query || "";
 }
@@ -1183,7 +1287,7 @@ function rowEl(p, best) {
   go.insertAdjacentHTML("beforeend", ARROW);
   a.appendChild(txt); a.appendChild(go);
   a.addEventListener("click", function () {
-    patchPlace(p.id, { usedAt: Date.now() }).catch(function () {});
+    markUsed(p);
   });
   li.appendChild(a);
 
@@ -1260,14 +1364,15 @@ function render() {
     shown = places.filter(function (p) { return !fq || norm(p.name).indexOf(fq) > -1; })
       .sort(function (a, b) { return a.name.localeCompare(b.name); });
     if (allSort === "near" && here) shown.sort(function (a, b) {
-      var x = distKm(a), y = distKm(b);
+      var ra = roadKm(a), rb = roadKm(b), x = ra ? ra.km : distKm(a), y = rb ? rb.km : distKm(b);
       return (x === null ? 1e9 : x) - (y === null ? 1e9 : y);
     });
   }
   else if (searching) shown = rank(cmd.text);
-  else shown = sorted(places.filter(function (p) { return p.usedAt > 0; })).slice(0, 10);
+  else shown = homeList();
   $("homeBox").hidden = all; $("backBtn").hidden = !all; $("tools").hidden = !all;
-  $("allBar").hidden = !all; $("looks").hidden = !all;
+  $("allBar").hidden = !all; $("looks").hidden = !all; $("homeOrder").hidden = !all;
+  ["recent", "most", "near"].forEach(function (k) { $("hs-" + k).setAttribute("aria-pressed", homeSort === k ? "true" : "false"); });
   $("sortAz").setAttribute("aria-pressed", allSort === "az" ? "true" : "false");
   $("sortNear").setAttribute("aria-pressed", allSort === "near" ? "true" : "false");
   $("hint").hidden = places.length > 0;
@@ -1291,7 +1396,9 @@ function render() {
 
   listEl.replaceChildren();
   shown.forEach(function (p, i) { listEl.appendChild(rowEl(p, searching && i === 0)); });
-  $("listTitle").textContent = all ? L("كل الأماكن المسجّلة") + (places.length ? " · " + countLabel(places.length) : "") : searching ? L("نتيجة البحث") : L("آخر الأماكن");
+  queueRoads((all && allSort === "near") || (!all && !searching && homeSort === "near") ? places : shown);
+  $("listTitle").textContent = all ? L("كل الأماكن المسجّلة") + (places.length ? " · " + countLabel(places.length) : "") : searching ? L("نتيجة البحث") :
+    L(homeSort === "near" && here ? "الأقرب ليك" : homeSort === "most" ? "الأكتر استخدام" : "آخر الأماكن");
 
   var showEmpty = !shown.length && !searching;
   emptyEl.hidden = !showEmpty;
@@ -1482,6 +1589,13 @@ function setView(v) {
 $("gearBtn").addEventListener("click", function () { setView(view === "all" ? "home" : "all"); });
 var allSort = "az";
 $("allQ").addEventListener("input", render);
+["recent", "most", "near"].forEach(function (k) {
+  $("hs-" + k).addEventListener("click", function () {
+    homeSort = k; setPref("fav-places.homeSort", k === "recent" ? "" : k);
+    if (k === "near") locateHere(true);
+    render();
+  });
+});
 $("sortAz").addEventListener("click", function () { allSort = "az"; render(); });
 $("sortNear").addEventListener("click", function () { allSort = "near"; hereAt = 0; locateHere(); render(); });
 
@@ -1616,7 +1730,7 @@ function heard(target, text) {
   if (cmd.save) { openSaver(cmd.name, true); return; }
   var best = rankScored(cmd.text)[0];
   if (best && best.s >= 85) {
-    patchPlace(best.p.id, { usedAt: Date.now() }).catch(function () {});
+    markUsed(best.p);
     toast(T("رايحين «{0}»…", best.p.name));
     location.assign(dirUrl(best.p));
   }
@@ -1672,6 +1786,7 @@ function mergePlaces(arr) {
       query: typeof p.query === "string" ? p.query.slice(0, 200) : null,
       createdAt: +p.createdAt || Date.now(), usedAt: +p.usedAt || 0, updatedAt: Date.now()
     };
+    if (+p.uses > 0) c.uses = +p.uses;
     if (typeof p.icon === "string" && p.icon.length <= 16) c.icon = p.icon;
     if (c.lat !== null && !validLL(c.lat, c.lng)) return;
     if (c.lat === null && !c.link && !c.query) return;
@@ -1746,7 +1861,7 @@ function mergeSets(a, b) {
     var o = byId[p.id];
     if (!o) { byId[p.id] = p; return; }
     var win = stamp(p) > stamp(o) ? p : o, lose = win === p ? o : p;
-    byId[p.id] = Object.assign({}, win, { usedAt: Math.max(win.usedAt || 0, lose.usedAt || 0) });
+    byId[p.id] = Object.assign({}, win, { usedAt: Math.max(win.usedAt || 0, lose.usedAt || 0), uses: Math.max(win.uses || 0, lose.uses || 0) });
   });
   var list = Object.keys(byId).map(function (id) { return byId[id]; })
     .filter(function (p) { return !(gr[p.id] >= stamp(p)); })
