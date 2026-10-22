@@ -11,6 +11,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="FAV Places">
 <title>FAV Places</title>
+<script>try { var s = localStorage.getItem("fav-places.skin"); if (s) document.documentElement.setAttribute("data-skin", s); } catch (e) {}</script>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Reem+Kufi:wght@500;700&display=swap">
 <style>
 /* Layout: one narrow column you can use with a thumb. Command box on top,
@@ -68,6 +69,51 @@
   color-scheme: dark;
 }
 
+/* Themes (gear -> Theme). "Classic blue" is the default above and follows the phone's
+   light/dark setting; every other theme has its own fixed look. */
+:root[data-skin] { color-scheme: light; }
+:root[data-skin="night"] {
+  --bg: #05070A; --surface: #0E131A; --ink: #E6F1FF; --muted: #8A97A8; --line: #1E2833;
+  --sign: #0B1118; --sign-ink: #E6F1FF; --sign-sub: #7FE7FF; --sign-edge: #00D1FF; --sign-soft: #0F2230;
+  --pin: #00D1FF; --pin-ink: #001018; --danger: #FF7A7A; color-scheme: dark;
+}
+:root[data-skin="night"] .plate { box-shadow: inset 0 0 0 1.5px var(--sign-edge), 0 0 18px rgba(0, 209, 255, 0.22); }
+:root[data-skin="sand"] {
+  --bg: #F4ECDD; --surface: #FFF9EF; --ink: #3B2A1A; --muted: #7A6650; --line: #E2D3BC;
+  --sign: #EBDCC2; --sign-ink: #3B2A1A; --sign-sub: #7A6650; --sign-edge: #C8A878; --sign-soft: #EADBC2;
+  --pin: #B5562B; --pin-ink: #FFF7EE; --danger: #A33A20; --radius: 18px;
+}
+:root[data-skin="minimal"] {
+  --bg: #FFFFFF; --surface: #F4F6F8; --ink: #111418; --muted: #5F6670; --line: #E4E7EB;
+  --sign: #FFFFFF; --sign-ink: #111418; --sign-sub: #5F6670; --sign-edge: #FFFFFF; --sign-soft: #EEF1F4;
+  --pin: #111418; --pin-ink: #FFFFFF; --danger: #C62828; --radius: 14px; --font-display: var(--font-body);
+}
+:root[data-skin="minimal"] .plate { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.08); border-inline-start: 6px solid #2563EB; }
+:root[data-skin="minimal"] .row.best .plate { box-shadow: 0 0 0 2px #2563EB, 0 6px 16px rgba(0, 0, 0, 0.08); }
+:root[data-skin="pop"] {
+  --bg: #FFF8F0; --surface: #FFFFFF; --ink: #1F1A17; --muted: #6B625C; --line: #EADFD3;
+  --sign: #F25C54; --sign-ink: #FFFFFF; --sign-sub: #FFF1EE; --sign-edge: rgba(255, 255, 255, 0.5); --sign-soft: #FFE9E4;
+  --pin: #1A9E92; --pin-ink: #FFFFFF; --danger: #C62828; --radius: 22px;
+}
+:root[data-skin="pop"] #list > li:nth-child(4n+2) .plate { --sign: #1A9E92; }
+:root[data-skin="pop"] #list > li:nth-child(4n+3) .plate { --sign: #7357D1; }
+:root[data-skin="pop"] #list > li:nth-child(4n+4) .plate { --sign: #D9730D; }
+:root[data-skin="glass"] {
+  --bg: #2E1A6B; --surface: rgba(255, 255, 255, 0.14); --ink: #FFFFFF; --muted: rgba(255, 255, 255, 0.78); --line: rgba(255, 255, 255, 0.3);
+  --sign: rgba(255, 255, 255, 0.16); --sign-ink: #FFFFFF; --sign-sub: rgba(255, 255, 255, 0.82); --sign-edge: rgba(255, 255, 255, 0.4); --sign-soft: rgba(255, 255, 255, 0.18);
+  --pin: #FDE047; --pin-ink: #1E1B4B; --danger: #FFB4B4; --radius: 18px; color-scheme: dark;
+}
+:root[data-skin="glass"] body { background: linear-gradient(165deg, #3A1C71 0%, #4F46E5 55%, #0EA5E9 100%) fixed; }
+:root[data-skin="glass"] .plate { -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+/* where the theme's sign colour is too pale for a button or a selected chip, use its button colour */
+:root[data-skin="minimal"] .btn.sign { background: #2563EB; color: #FFFFFF; }
+:root[data-skin="night"] .btn.sign { box-shadow: inset 0 0 0 1.5px var(--sign-edge); }
+:root[data-skin="minimal"] .lang[aria-pressed="true"], :root[data-skin="minimal"] .chip[aria-pressed="true"],
+:root[data-skin="night"] .lang[aria-pressed="true"], :root[data-skin="night"] .chip[aria-pressed="true"],
+:root[data-skin="sand"] .lang[aria-pressed="true"], :root[data-skin="sand"] .chip[aria-pressed="true"] {
+  background: var(--pin); color: var(--pin-ink); border-color: var(--pin);
+}
+
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 body {
@@ -83,7 +129,7 @@ body {
   max-width: 34rem;
   margin-inline: auto;
   padding-inline: 16px;
-  padding-block: 20px 96px;
+  padding-block: 20px 112px;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -107,7 +153,7 @@ button, input { font: inherit; color: inherit; }
 .stack { display: flex; flex-direction: column; gap: 20px; }
 #backBtn { align-self: flex-start; }
 html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
-.top h1 { font-family: var(--font-display); font-weight: 700; font-size: 1.75rem; line-height: 1.2; white-space: nowrap; }
+.top h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.25rem, 5.4vw, 1.75rem); line-height: 1.2; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .count { color: var(--muted); font-size: 0.875rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 /* Command box */
@@ -225,7 +271,8 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
 }
 .row.best .plate { box-shadow: inset 0 0 0 4px var(--sign), inset 0 0 0 5.5px var(--sign-edge), 0 0 0 3px var(--pin); }
 .plate-text { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.plate-name { font-family: var(--font-display); font-weight: 700; font-size: 1.375rem; line-height: 1.35; overflow-wrap: anywhere; }
+.plate-name { font-family: var(--font-display); font-weight: 700; font-size: 1.3125rem; line-height: 1.3; overflow-wrap: break-word; }
+@media (max-width: 420px) { .plate { gap: 10px; padding-inline: 14px 12px; } .plate-go > span { display: none; } }
 .plate-sub { color: var(--sign-sub); font-size: 0.8125rem; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .plate-go { display: flex; align-items: center; gap: 6px; font-size: 0.875rem; font-weight: 500; flex: none; }
 .more, .share {
@@ -235,6 +282,34 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
   font-size: 1.25rem; line-height: 1; cursor: pointer;
 }
 .share { display: grid; place-items: center; padding: 0; }
+.plate-icon { flex: none; font-size: 1.75rem; line-height: 1; }
+.chip[aria-pressed="true"] { background: var(--sign); color: var(--sign-ink); border-color: var(--sign); }
+.allbar { display: flex; flex-direction: column; gap: 10px; }
+.icons { display: flex; flex-wrap: wrap; gap: 6px; }
+.icons button {
+  width: 44px; height: 44px; font-size: 1.375rem; line-height: 1;
+  background: var(--bg); border: 1.5px solid var(--line); border-radius: 10px; cursor: pointer;
+}
+.icons button[aria-pressed="true"] { border: 2px solid var(--sign); background: var(--sign-soft); }
+.skins { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.skin {
+  display: flex; flex-direction: column; gap: 6px; padding: 6px;
+  background: var(--surface); color: var(--ink);
+  border: 1.5px solid var(--line); border-radius: 12px;
+  font-size: 0.875rem; font-weight: 600; cursor: pointer;
+}
+.skin[aria-pressed="true"] { border: 2.5px solid var(--pin); }
+.sw { height: 58px; border-radius: 8px; padding: 8px; display: flex; flex-direction: column; justify-content: center; gap: 5px; }
+.sw b { display: block; height: 12px; border-radius: 4px; }
+.sw i { display: block; width: 22px; height: 8px; border-radius: 4px; }
+/* the save button sits at the bottom of the screen, under the thumb */
+#saveHere.dock {
+  position: fixed; z-index: 5; inset-inline: 16px; bottom: 0;
+  margin-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  max-width: 32rem; margin-inline: auto;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+}
+.stack:has(#saver:not([hidden])) #saveHere.dock { display: none; }
 .edit {
   flex-basis: 100%;
   background: var(--surface);
@@ -256,7 +331,7 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
 
 .toast {
   position: fixed; inset-inline: 16px; bottom: 0;
-  margin-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  margin-bottom: calc(84px + env(safe-area-inset-bottom, 0px));
   max-width: 32rem; margin-inline: auto;
   background: var(--ink); color: var(--bg);
   border-radius: var(--radius); padding: 12px 16px;
@@ -272,9 +347,9 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
 
 <main class="app">
   <header class="top">
-    <h1 dir="ltr">FAV Places</h1>
+    <h1 dir="ltr">ELKADY FAMILY <span aria-hidden="true">👨‍👩‍👧</span></h1>
+    <p id="count" class="count" hidden></p>
     <div class="top-end">
-      <p id="count" class="count"></p>
       <button id="gearBtn" class="lang" type="button" aria-label="كل الأماكن المسجّلة"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       <button id="langBtn" class="lang" type="button"></button>
     </div>
@@ -302,10 +377,10 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
       <button id="micGo" class="mic" type="button" aria-label="قول اسم المكان" hidden><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0"/><path d="M12 17.5V21"/></svg></button>
     </div>
     <div id="answer" class="answer" hidden></div>
-    <p class="hint">دوس على الميكروفون وقول اسم المكان، أو اكتبه. ولتسجيل مكانك قول «سجّل ده».</p>
+    <p id="hint" class="hint">دوس على الميكروفون وقول اسم المكان، أو اكتبه. ولتسجيل مكانك قول «سجّل ده».</p>
   </form>
 
-  <button id="saveHere" class="btn pin" type="button">
+  <button id="saveHere" class="btn pin dock" type="button">
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-6.5-6-6.5-11a6.5 6.5 0 0 1 13 0c0 5-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg>
     سجّل المكان اللي أنا فيه
   </button>
@@ -360,9 +435,21 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
 
   </div>
 
+  <button id="backBtn" class="btn ghost small" type="button" hidden>رجوع</button>
+  <section id="looks" class="list-wrap" aria-labelledby="looksTitle" hidden>
+    <h2 id="looksTitle">الثيم</h2>
+    <div id="skinList" class="skins"></div>
+  </section>
+
   <section class="list-wrap" aria-labelledby="listTitle">
-    <button id="backBtn" class="btn ghost small" type="button" hidden>رجوع</button>
     <h2 id="listTitle">آخر الأماكن</h2>
+    <div id="allBar" class="allbar" hidden>
+      <input id="allQ" class="text-input" type="search" placeholder="دوّر في أماكنك" autocomplete="off">
+      <div class="chips" role="group" aria-label="الترتيب">
+        <button id="sortAz" class="chip" type="button" aria-pressed="true">أبجدي</button>
+        <button id="sortNear" class="chip" type="button" aria-pressed="false">الأقرب ليا</button>
+      </div>
+    </div>
     <ul id="list"></ul>
     <div id="empty" class="empty">
       <strong id="emptyTitle">بنجيب أماكنك المسجّلة…</strong>
@@ -444,6 +531,32 @@ var EN = {
   "وجّهني على {0}": "Navigate to {0}",
   "تعديل {0}": "Edit {0}",
   "ابعت {0}": "Share {0}",
+  "دوّر في أماكنك": "Search your places",
+  "الترتيب": "Sort",
+  "أبجدي": "A–Z",
+  "الأقرب ليا": "Nearest",
+  "كم": "km",
+  "م": "m",
+  "مفيش نتيجة": "No match",
+  "جرّب اسم تاني.": "Try another name.",
+  "الأيقونة": "Icon",
+  "الثيم": "Theme",
+  "أزرق كلاسيك": "Classic blue",
+  "ليلي": "Night",
+  "رملي": "Sand",
+  "أبيض بسيط": "Minimal",
+  "ألوان": "Colors",
+  "زجاج": "Glass",
+  "الإضاءة": "Brightness",
+  "تلقائي": "Auto",
+  "فاتح": "Light",
+  "غامق": "Dark",
+  "أزرق": "Blue",
+  "أخضر الطريق": "Highway green",
+  "النيل": "Nile",
+  "الغروب": "Sunset",
+  "رمادي": "Graphite",
+  "وردي": "Rose",
   "اللينك اتنسخ. الصقه في أي رسالة.": "Link copied. Paste it into any message.",
   "ماقدرتش أبعت المكان.": "Couldn't share the place.",
   "اتمسح «{0}»": "Deleted “{0}”",
@@ -749,7 +862,7 @@ async function putPlace(data, id) {
 }
 /* Opening a place only moves it up this phone's list; a new name goes to every phone */
 async function patchPlace(id, patch) {
-  var renamed = patch.name !== undefined;
+  var renamed = patch.name !== undefined || patch.icon !== undefined;
   if (renamed) patch = Object.assign({ updatedAt: Date.now() }, patch);
   places = places.map(function (p) { return p.id === id ? Object.assign({}, p, patch) : p; });
   if (mode === "device" && !writeLocal()) mode = "memory";
@@ -767,8 +880,52 @@ async function removePlace(id) {
 function boot() { useDevice(); }
 
 /* ---------- rendering ---------- */
+/* An icon guessed from the name; the user can pick another one under ⋯ */
+var ICON_RULES = [
+  ["🏖️", /golf|beach|resort|porto|sea\b|بحر|شاطي|شاطئ/],
+  ["🏠", /home|house|apart|appart|flat|بيت|منزل|شقه/],
+  ["💼", /work|office|company|شغل|مكتب|شركه/],
+  ["🏗️", /unimix|plant|site|concrete|محطه|خرسانه/],
+  ["🏋️", /gym|fitness|جيم/],
+  ["⚽", /soccer|football|club|نادي|ملعب/],
+  ["🚗", /car\b|car |oil|wash|paint|garage|tyre|tire|mechanic|chevrolet|عربيه|زيت|غسيل|ميكانيكي/],
+  ["🏧", /atm|bank|money|transfer|بنك|فلوس|صرافه/],
+  ["🩺", /doctor|clinic|hospital|pharmacy|دكتور|عياده|مستشفي|صيدليه/],
+  ["🍽️", /cafe|coffee|restaurant|resturant|food|kebda|mo5|كافيه|مطعم|اكل|كبده/],
+  ["🛒", /market|mall|shop|سوبر|ماركت|مول|محل/],
+  ["🎓", /school|university|course|مدرسه|جامعه|كورس/],
+  ["⚓", /port\b|port |ميناء|مينا/],
+  ["⛽", /petrol|fuel|gas station|بنزين/]
+];
+var ICON_CHOICES = ["📍", "🏠", "💼", "🏗️", "🏋️", "⚽", "🚗", "⛽", "🏧", "🩺", "🍽️", "☕", "🛒", "🎓", "🕌", "⚓", "🏖️", "👤", "👨‍👩‍👧", "❤️"];
+function placeIcon(p) {
+  if (p.icon) return p.icon;
+  var n = norm(p.name) + " ";
+  for (var i = 0; i < ICON_RULES.length; i++) if (ICON_RULES[i][1].test(n)) return ICON_RULES[i][0];
+  return "📍";
+}
+/* Where the phone is now, for the distance on each sign and "Nearest" */
+var here = null, hereAt = 0;
+function locateHere() {
+  if (!navigator.geolocation || Date.now() - hereAt < 60000) return;
+  hereAt = Date.now();
+  navigator.geolocation.getCurrentPosition(function (pos) {
+    here = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+    if (!editingId) render();
+  }, function () {}, { enableHighAccuracy: false, timeout: 10000, maximumAge: 120000 });
+}
+function distKm(p) {
+  if (!here || typeof p.lat !== "number") return null;
+  var r = Math.PI / 180, dLat = (p.lat - here.lat) * r, dLng = (p.lng - here.lng) * r;
+  var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(here.lat * r) * Math.cos(p.lat * r) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+  return 12742 * Math.asin(Math.sqrt(a));
+}
+function fmtDist(km) {
+  if (km < 1) return Math.max(10, Math.round(km * 100) * 10) + " " + L("م");
+  return (km < 10 ? km.toFixed(1) : String(Math.round(km))) + " " + L("كم");
+}
 function subText(p) {
-  if (typeof p.lat === "number") return fmtLL(p.lat) + ", " + fmtLL(p.lng);
+  if (typeof p.lat === "number") { var d = distKm(p); return d === null ? "" : fmtDist(d); }
   if (p.link) return L("لينك جوجل مابس");
   return p.query || "";
 }
@@ -777,11 +934,11 @@ function rowEl(p, best) {
   var a = el("a", "plate");
   a.href = dirUrl(p); a.target = "_blank"; a.rel = "noopener";
   a.setAttribute("aria-label", T("وجّهني على {0}", p.name));
+  a.appendChild(el("span", "plate-icon", placeIcon(p)));
   var txt = el("span", "plate-text");
   txt.appendChild(el("span", "plate-name", p.name));
-  var sub = el("span", "plate-sub", subText(p));
-  if (typeof p.lat === "number") { sub.dir = "ltr"; sub.style.textAlign = LANG === "ar" ? "right" : "left"; }
-  txt.appendChild(sub);
+  var st = subText(p);
+  if (st) txt.appendChild(el("span", "plate-sub", st));
   var go = el("span", "plate-go");
   go.appendChild(el("span", null, L("وجّهني")));
   go.insertAdjacentHTML("beforeend", ARROW);
@@ -836,7 +993,15 @@ function rowEl(p, best) {
       del.addEventListener("click", function () { confirmDeleteId = p.id; render(); });
       btns.appendChild(del);
     }
-    box.appendChild(lab); box.appendChild(inp); box.appendChild(btns);
+    var icLab = el("label", null, L("الأيقونة"));
+    var icons = el("div", "icons"), cur = placeIcon(p);
+    ICON_CHOICES.forEach(function (ic) {
+      var ib = el("button", null, ic); ib.type = "button";
+      ib.setAttribute("aria-pressed", ic === cur ? "true" : "false");
+      ib.addEventListener("click", function () { patchPlace(p.id, { icon: ic }).catch(function () {}); });
+      icons.appendChild(ib);
+    });
+    box.appendChild(lab); box.appendChild(inp); box.appendChild(icLab); box.appendChild(icons); box.appendChild(btns);
     li.appendChild(box);
   }
   return li;
@@ -851,10 +1016,22 @@ function render() {
   answerEl.replaceChildren();
   var all = view === "all";
   var shown, searching = !all && !!raw && !cmd.save;
-  if (all) shown = places.slice().sort(function (a, b) { return a.name.localeCompare(b.name); });
+  if (all) {
+    var fq = norm($("allQ").value);
+    shown = places.filter(function (p) { return !fq || norm(p.name).indexOf(fq) > -1; })
+      .sort(function (a, b) { return a.name.localeCompare(b.name); });
+    if (allSort === "near" && here) shown.sort(function (a, b) {
+      var x = distKm(a), y = distKm(b);
+      return (x === null ? 1e9 : x) - (y === null ? 1e9 : y);
+    });
+  }
   else if (searching) shown = rank(cmd.text);
   else shown = sorted(places.filter(function (p) { return p.usedAt > 0; })).slice(0, 5);
   $("homeBox").hidden = all; $("backBtn").hidden = !all; $("tools").hidden = !all;
+  $("allBar").hidden = !all; $("looks").hidden = !all;
+  $("sortAz").setAttribute("aria-pressed", allSort === "az" ? "true" : "false");
+  $("sortNear").setAttribute("aria-pressed", allSort === "near" ? "true" : "false");
+  $("hint").hidden = places.length > 0;
   $("gearBtn").setAttribute("aria-pressed", all ? "true" : "false");
 
   if (raw && cmd.save) {
@@ -875,12 +1052,15 @@ function render() {
 
   listEl.replaceChildren();
   shown.forEach(function (p, i) { listEl.appendChild(rowEl(p, searching && i === 0)); });
-  $("listTitle").textContent = all ? L("كل الأماكن المسجّلة") : searching ? L("نتيجة البحث") : L("آخر الأماكن");
+  $("listTitle").textContent = all ? L("كل الأماكن المسجّلة") + (places.length ? " · " + countLabel(places.length) : "") : searching ? L("نتيجة البحث") : L("آخر الأماكن");
 
   var showEmpty = !shown.length && !searching;
   emptyEl.hidden = !showEmpty;
   if (showEmpty) {
-    if (places.length) {
+    if (all && places.length) {
+      $("emptyTitle").textContent = L("مفيش نتيجة");
+      $("emptyBody").textContent = L("جرّب اسم تاني.");
+    } else if (places.length) {
       $("emptyTitle").textContent = L("لسه مفيش أماكن فتحتها");
       $("emptyBody").textContent = L("أي مكان تفتحه أو تسجّله هيظهر هنا. كل أماكنك المسجّلة هتلاقيها من الترس اللي فوق.");
     } else if (mode === "loading") {
@@ -1032,6 +1212,7 @@ function applyLang() {
   render();
   if (draft && draft.loc && !$("stepName").hidden) { draft.name = $("pname").value; showStep("name"); }
   lockNote();
+  buildLooks();
 }
 $("langBtn").addEventListener("click", function () {
   LANG = LANG === "ar" ? "en" : "ar";
@@ -1060,6 +1241,50 @@ function setView(v) {
   window.scrollTo(0, 0);
 }
 $("gearBtn").addEventListener("click", function () { setView(view === "all" ? "home" : "all"); });
+var allSort = "az";
+$("allQ").addEventListener("input", render);
+$("sortAz").addEventListener("click", function () { allSort = "az"; render(); });
+$("sortNear").addEventListener("click", function () { allSort = "near"; hereAt = 0; locateHere(); render(); });
+
+/* Theme, kept on this phone. Each entry: key, name, and the colours of its little preview
+   (background, first sign, second sign, button, sign border) */
+var SKIN_LIST = [
+  ["", "أزرق كلاسيك", "#EDF0F3", "#14549F", "#14549F", "#E9A400", ""],
+  ["night", "ليلي", "#05070A", "#0B1118", "#0B1118", "#00D1FF", "#00D1FF"],
+  ["sand", "رملي", "#F4ECDD", "#EBDCC2", "#EBDCC2", "#B5562B", "#C8A878"],
+  ["minimal", "أبيض بسيط", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#111418", "#E4E7EB"],
+  ["pop", "ألوان", "#FFF8F0", "#F25C54", "#1A9E92", "#7357D1", ""],
+  ["glass", "زجاج", "linear-gradient(165deg, #3A1C71, #4F46E5 55%, #0EA5E9)", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.3)", "#FDE047", "rgba(255,255,255,0.5)"]
+];
+var BAR_OF = { "": "#14549F", night: "#05070A", sand: "#F4ECDD", minimal: "#FFFFFF", pop: "#F25C54", glass: "#3A1C71" };
+function getPref(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }
+function setPref(k, v) { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (e) {} }
+function applyLook() {
+  var root = document.documentElement, skin = getPref("fav-places.skin");
+  if (!SKIN_LIST.some(function (s) { return s[0] === skin; })) skin = "";
+  if (skin) root.setAttribute("data-skin", skin); else root.removeAttribute("data-skin");
+  root.removeAttribute("data-theme"); setPref("fav-places.mode", "");
+  var meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", BAR_OF[skin]);
+}
+function buildLooks() {
+  var skin = getPref("fav-places.skin");
+  $("skinList").replaceChildren();
+  SKIN_LIST.forEach(function (s) {
+    var b = el("button", "skin"); b.type = "button";
+    b.setAttribute("aria-pressed", s[0] === skin ? "true" : "false");
+    var sw = el("span", "sw"); sw.style.background = s[2];
+    [s[3], s[4]].forEach(function (c) {
+      var bar = el("b"); bar.style.background = c;
+      if (s[6]) bar.style.boxShadow = "inset 0 0 0 1.5px " + s[6];
+      sw.appendChild(bar);
+    });
+    var btn = el("i"); btn.style.background = s[5]; sw.appendChild(btn);
+    b.appendChild(sw); b.appendChild(el("span", null, L(s[1])));
+    b.addEventListener("click", function () { setPref("fav-places.skin", s[0]); applyLook(); buildLooks(); });
+    $("skinList").appendChild(b);
+  });
+}
 $("backBtn").addEventListener("click", function () { setView("home"); });
 $("locNext").addEventListener("click", function () { takeLoc($("loc").value); });
 $("loc").addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); takeLoc($("loc").value); } });
@@ -1181,6 +1406,7 @@ function mergePlaces(arr) {
       query: typeof p.query === "string" ? p.query.slice(0, 200) : null,
       createdAt: +p.createdAt || Date.now(), usedAt: +p.usedAt || 0, updatedAt: Date.now()
     };
+    if (typeof p.icon === "string" && p.icon.length <= 16) c.icon = p.icon;
     if (c.lat !== null && !validLL(c.lat, c.lng)) return;
     if (c.lat === null && !c.link && !c.query) return;
     var d = findDupe(c.name);
@@ -1271,7 +1497,7 @@ function mergeSets(a, b) {
 function canon(set) {
   return JSON.stringify([
     set.places.map(function (p) {
-      return [p.id, p.name, p.lat, p.lng, p.link || null, p.query || null, p.createdAt || 0, p.updatedAt || 0];
+      return [p.id, p.name, p.lat, p.lng, p.link || null, p.query || null, p.createdAt || 0, p.updatedAt || 0, p.icon || null];
     }).sort(function (x, y) { return x[0] < y[0] ? -1 : 1; }),
     Object.keys(set.graves).sort().map(function (id) { return [id, set.graves[id]]; })
   ]);
@@ -1456,10 +1682,14 @@ function checkShared() {
 }
 
 buildChips();
+applyLook();
+buildLooks();
 render();
 boot();
 startSync();
 checkShared();
+locateHere();
+document.addEventListener("visibilitychange", function () { if (!document.hidden) locateHere(); });
 if ('serviceWorker' in navigator) window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
 </script>
 </body>
