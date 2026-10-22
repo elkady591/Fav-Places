@@ -13,7 +13,7 @@
 <title>FAV Places</title>
 <script>try { var s = localStorage.getItem("fav-places.skin") || "", a = localStorage.getItem("fav-places.accent." + (s || "classic"));
   if (s) document.documentElement.setAttribute("data-skin", s); if (a) document.documentElement.style.setProperty("--accent", a); } catch (e) {}</script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Reem+Kufi:wght@500;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Reem+Kufi:wght@500;700&family=Aref+Ruqaa:wght@400;700&family=Caveat:wght@600;700&display=swap">
 <style>
 /* Layout: one narrow column you can use with a thumb. Command box on top,
    then the saved places as blue street-sign plates you tap to navigate. */
@@ -24,6 +24,7 @@
   --muted: #586673;
   --line: #CDD5DC;
   --accent: #14549F;
+  --on-accent: #FFFFFF;   /* text on the theme colour; the script picks black or white */
   --sign: var(--accent);
   --sign-ink: #FFFFFF;
   --sign-sub: color-mix(in srgb, var(--accent) 18%, white);
@@ -166,6 +167,133 @@
 :root[data-skin="tiles"] .row .more { inset-inline-end: 12px; }
 :root[data-skin="tiles"] .row .share svg { width: 17px; height: 17px; }
 :root[data-skin="tiles"] .edit { margin-top: 10px; }
+/* ---- Four themes that change the whole page, not only the colours ---- */
+
+/* Grid: big square tiles, two per row, the icon large in the middle */
+:root[data-skin="grid"] {
+  --accent: #0F766E;
+  --bg: #F2F5F4; --surface: #FFFFFF; --ink: #10201D; --muted: #5C6B68; --line: #DCE4E2;
+  --sign: var(--accent); --sign-ink: var(--on-accent); --sign-sub: var(--on-accent); --sign-edge: transparent;
+  --sign-soft: color-mix(in srgb, var(--accent) 12%, white);
+  --pin: var(--accent); --pin-ink: var(--on-accent); --danger: #C62828; --radius: 24px;
+}
+:root[data-skin="grid"] .top { flex-direction: column; align-items: stretch; gap: 10px; }
+:root[data-skin="grid"] .top h1 { font-size: 2rem; text-align: center; }
+:root[data-skin="grid"] .top-end { justify-content: center; }
+:root[data-skin="grid"] #list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+:root[data-skin="grid"] .row { position: relative; display: block; }
+:root[data-skin="grid"] .row:has(.edit) { grid-column: 1 / -1; }
+:root[data-skin="grid"] .plate {
+  flex-direction: column; justify-content: center; text-align: center; gap: 8px;
+  aspect-ratio: 1 / 1; padding: 12px 10px 46px;
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 28%, transparent);
+}
+:root[data-skin="grid"] .row:has(.edit) .plate { aspect-ratio: auto; min-height: 150px; }
+:root[data-skin="grid"] #list > li:nth-child(3n+2) .plate { --sign: color-mix(in srgb, var(--accent) 78%, #0B1220); }
+:root[data-skin="grid"] #list > li:nth-child(3n+3) .plate { --sign: color-mix(in srgb, var(--accent) 82%, #F59E0B); }
+:root[data-skin="grid"] .plate-icon {
+  font-size: 2.5rem; width: 74px; height: 74px; display: grid; place-items: center;
+  border-radius: 50%; background: rgba(255, 255, 255, 0.22);
+}
+:root[data-skin="grid"] .plate-text { flex: none; width: 100%; align-items: center; }
+:root[data-skin="grid"] .plate-name { font-size: 1.0625rem; line-height: 1.25; }
+:root[data-skin="grid"] .plate-sub { opacity: 0.85; }
+:root[data-skin="grid"] .plate-go { display: none; }
+:root[data-skin="grid"] .row .share, :root[data-skin="grid"] .row .more {
+  position: absolute; bottom: 10px; width: 32px; height: 32px;
+  background: rgba(255, 255, 255, 0.25); color: var(--on-accent); border: 0; border-radius: 50%; font-size: 1rem;
+}
+:root[data-skin="grid"] .row .share { inset-inline-start: calc(50% - 36px); }
+:root[data-skin="grid"] .row .more { inset-inline-start: calc(50% + 4px); }
+:root[data-skin="grid"] .row:has(.edit) .share, :root[data-skin="grid"] .row:has(.edit) .more { top: 10px; bottom: auto; }
+:root[data-skin="grid"] .row .share svg { width: 16px; height: 16px; }
+:root[data-skin="grid"] .edit { margin-top: 10px; }
+
+/* Paper: a lined notebook page, handwritten names, no boxes */
+:root[data-skin="paper"] {
+  --accent: #C0392B;
+  --bg: #FBF8EF; --surface: #FFFDF6; --ink: #2B2B2B; --muted: #6E6A60; --line: #D8D2C2;
+  --sign: transparent; --sign-ink: #2B2B2B; --sign-sub: #6E6A60; --sign-edge: transparent;
+  --sign-soft: color-mix(in srgb, var(--accent) 10%, #FBF8EF);
+  --pin: var(--accent); --pin-ink: #FFFFFF; --danger: #A93226; --radius: 4px;
+  --font-display: "Caveat", "Aref Ruqaa", cursive;
+}
+:root[data-skin="paper"] body {
+  background-color: var(--bg);
+  background-image: repeating-linear-gradient(to bottom, transparent 0 35px, #D6E1EF 35px 36px);
+}
+:root[data-skin="paper"] .top { border-bottom: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); padding-bottom: 8px; }
+:root[data-skin="paper"] .top h1 { font-size: clamp(1.25rem, 6vw, 1.625rem); }
+:root[data-skin="paper"] .lang, :root[data-skin="paper"] .more, :root[data-skin="paper"] .share {
+  background: transparent; border: 1.5px solid var(--ink); border-radius: 4px; color: var(--ink);
+}
+:root[data-skin="paper"] .lang[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+:root[data-skin="paper"] .field input { background: transparent; border: 0; border-bottom: 2px solid var(--ink); border-radius: 0; }
+:root[data-skin="paper"] .mic { background: transparent; border: 1.5px solid var(--ink); border-radius: 4px; }
+:root[data-skin="paper"] #list { gap: 0; }
+:root[data-skin="paper"] .plate { box-shadow: none; border-radius: 0; border-bottom: 2px dashed var(--line); padding: 10px 2px; }
+:root[data-skin="paper"] .row.best .plate { box-shadow: none; background: color-mix(in srgb, #FFE066 55%, transparent); }
+:root[data-skin="paper"] .plate-name { font-size: 1.75rem; line-height: 1.15; }
+:root[data-skin="paper"] .plate-go { color: var(--accent); }
+:root[data-skin="paper"] .row .share, :root[data-skin="paper"] .row .more { border: 0; color: var(--muted); }
+:root[data-skin="paper"] .btn.pin, :root[data-skin="paper"] #saveHere.dock { border-radius: 4px; box-shadow: 3px 3px 0 #2B2B2B; }
+:root[data-skin="paper"] .list-wrap h2 { font-family: var(--font-display); font-size: 1.5rem; color: var(--accent); }
+
+/* Drive: black, huge names and buttons, easy to hit while driving */
+:root[data-skin="drive"] {
+  --accent: #FACC15; --on-accent: #111111;
+  --bg: #000000; --surface: #121212; --ink: #FFFFFF; --muted: #BDBDBD; --line: #333333;
+  --sign: var(--accent); --sign-ink: var(--on-accent); --sign-sub: var(--on-accent); --sign-edge: transparent; --sign-soft: #222222;
+  --pin: var(--accent); --pin-ink: var(--on-accent); --danger: #FF6B6B; --radius: 18px; color-scheme: dark;
+}
+:root[data-skin="drive"] .field input { height: 68px; font-size: 1.375rem; }
+:root[data-skin="drive"] .field .mic { width: 56px; height: 56px; top: 6px; background: var(--accent); color: var(--on-accent); }
+:root[data-skin="drive"] .plate { min-height: 108px; padding: 18px 16px; box-shadow: none; }
+:root[data-skin="drive"] .plate-icon { font-size: 2.5rem; }
+:root[data-skin="drive"] .plate-name { font-size: 1.875rem; font-weight: 800; line-height: 1.15; }
+:root[data-skin="drive"] .plate-sub { font-size: 1.0625rem; font-weight: 600; opacity: 0.8; }
+:root[data-skin="drive"] .plate-go > span { display: none; }
+:root[data-skin="drive"] .plate-go svg { width: 40px; height: 40px; }
+:root[data-skin="drive"] .plate { flex-basis: 100%; }
+:root[data-skin="drive"] .row .share, :root[data-skin="drive"] .row .more { flex: 1 1 0; width: auto; height: 52px; background: #1C1C1C; border-color: #333; color: #FFFFFF; font-size: 1.5rem; }
+:root[data-skin="drive"] .list-wrap h2 { font-size: 1.0625rem; color: var(--accent); }
+:root[data-skin="drive"] #saveHere.dock { min-height: 64px; font-size: 1.25rem; }
+
+/* Map: a map in the background, places as white callouts with a map pin */
+:root[data-skin="map"] {
+  --accent: #E11D48;
+  --bg: #E8EEE3; --surface: #FFFFFF; --ink: #1F2A1F; --muted: #5E6B5E; --line: #CFD8C8;
+  --sign: #FFFFFF; --sign-ink: #1F2A1F; --sign-sub: #5E6B5E; --sign-edge: transparent;
+  --sign-soft: color-mix(in srgb, var(--accent) 12%, white);
+  --pin: var(--accent); --pin-ink: #FFFFFF; --danger: #C62828; --radius: 16px;
+}
+:root[data-skin="map"] body {
+  background-color: #E8EEE3;
+  background-image:
+    radial-gradient(circle at 18% 22%, #CFE3C4 0 70px, transparent 71px),
+    radial-gradient(circle at 85% 64%, #BFD9EE 0 95px, transparent 96px),
+    linear-gradient(28deg, transparent 46%, #FFFFFF 46% 50%, transparent 50%),
+    linear-gradient(90deg, transparent 48%, #F7F3E8 48% 52%, transparent 52%),
+    linear-gradient(0deg, transparent 48%, #F7F3E8 48% 52%, transparent 52%);
+  background-size: 100% 100%, 100% 100%, 100% 100%, 140px 140px, 140px 140px;
+  background-attachment: fixed;
+}
+:root[data-skin="map"] #list { gap: 16px; }
+:root[data-skin="map"] .plate { position: relative; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.14); border-end-start-radius: 4px; }
+:root[data-skin="map"] .plate::after {
+  content: ""; position: absolute; bottom: -9px; inset-inline-start: 22px;
+  border: 9px solid transparent; border-top-color: #FFFFFF; border-bottom: 0;
+}
+:root[data-skin="map"] .row.best .plate { box-shadow: 0 0 0 3px var(--accent), 0 6px 18px rgba(0, 0, 0, 0.14); }
+:root[data-skin="map"] .plate-icon { position: relative; isolation: isolate; width: 46px; height: 46px; display: grid; place-items: center; font-size: 1.3rem; }
+:root[data-skin="map"] .plate-icon::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: var(--accent); border-radius: 50% 50% 50% 0; transform: rotate(-45deg);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.25);
+}
+:root[data-skin="map"] .plate-go { color: var(--accent); }
+:root[data-skin="map"] .row .share, :root[data-skin="map"] .row .more { border: 0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
+:root[data-skin="map"] .field input { border: 0; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12); }
 /* where the theme's sign colour is too pale for a button or a selected chip, use its button colour */
 :root[data-skin="minimal"] .btn.sign { background: var(--accent); color: #FFFFFF; }
 :root[data-skin="night"] .btn.sign { box-shadow: inset 0 0 0 1.5px var(--sign-edge); }
@@ -626,6 +754,10 @@ var EN = {
   "ألوان": "Colors",
   "زجاج": "Glass",
   "مودرن": "Modern",
+  "شبكة": "Grid",
+  "ورق": "Paper",
+  "سواقة": "Drive",
+  "خريطة": "Map",
   "الإضاءة": "Brightness",
   "تلقائي": "Auto",
   "فاتح": "Light",
@@ -1334,10 +1466,15 @@ var SKIN_LIST = [
   ["minimal", "أبيض بسيط", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#111418", "#E4E7EB"],
   ["pop", "ألوان", "#FFF8F0", "#F25C54", "#1A9E92", "#7357D1", ""],
   ["glass", "زجاج", "linear-gradient(165deg, #3A1C71, #4F46E5 55%, #0EA5E9)", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.3)", "#FDE047", "rgba(255,255,255,0.5)"],
-  ["tiles", "مودرن", "linear-gradient(180deg, #FF7A59 0 34%, #F7F5F2 34%)", "#FFFFFF", "#FFFFFF", "#FF5A5F", "#ECE7E1"]
+  ["tiles", "مودرن", "linear-gradient(180deg, #FF7A59 0 34%, #F7F5F2 34%)", "#FFFFFF", "#FFFFFF", "#FF5A5F", "#ECE7E1"],
+  ["grid", "شبكة", "#F2F5F4", "#0F766E", "#0F766E", "#0F766E", ""],
+  ["paper", "ورق", "repeating-linear-gradient(to bottom, #FBF8EF 0 9px, #D6E1EF 9px 10px)", "#FFFDF6", "#FFFDF6", "#C0392B", "#2B2B2B"],
+  ["drive", "سواقة", "#000000", "#FACC15", "#FACC15", "#FACC15", ""],
+  ["map", "خريطة", "linear-gradient(28deg, #E8EEE3 46%, #FFFFFF 46% 52%, #E8EEE3 52%)", "#FFFFFF", "#FFFFFF", "#E11D48", "#CFD8C8"]
 ];
-var DEFAULT_ACCENT = { "": "#14549F", night: "#00D1FF", sand: "#B5562B", minimal: "#2563EB", pop: "#F25C54", glass: "#4F46E5", tiles: "#FF5A5F" };
-var BAR_OF = { night: "#05070A", sand: "#F4ECDD", minimal: "#FFFFFF" };   // the rest colour the phone's top bar with the theme colour
+var DEFAULT_ACCENT = { "": "#14549F", night: "#00D1FF", sand: "#B5562B", minimal: "#2563EB", pop: "#F25C54", glass: "#4F46E5", tiles: "#FF5A5F",
+  grid: "#0F766E", paper: "#C0392B", drive: "#FACC15", map: "#E11D48" };
+var BAR_OF = { night: "#05070A", sand: "#F4ECDD", minimal: "#FFFFFF", paper: "#FBF8EF", drive: "#000000", map: "#E8EEE3" };   // the rest colour the phone's top bar with the theme colour
 var COLORS = [["#14549F", "أزرق"], ["#2563EB", "سماوي"], ["#0F766E", "تركواز"], ["#1E6B3A", "أخضر"], ["#6D28D9", "بنفسجي"],
   ["#BE185D", "وردي"], ["#FF5A5F", "مرجاني"], ["#C2410C", "برتقالي"], ["#334155", "رمادي"]];
 function accentKey(skin) { return "fav-places.accent." + (skin || "classic"); }
@@ -1350,6 +1487,10 @@ function applyLook() {
   root.removeAttribute("data-theme"); setPref("fav-places.mode", "");
   var accent = getPref(accentKey(skin));
   if (accent) root.style.setProperty("--accent", accent); else root.style.removeProperty("--accent");
+  // black or white text on the theme colour, whichever reads better
+  var hex = (accent || DEFAULT_ACCENT[skin] || "#14549F").replace("#", ""), rgb = [0, 2, 4].map(function (i) { return parseInt(hex.substr(i, 2), 16) / 255; });
+  var lum = 0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2];
+  root.style.setProperty("--on-accent", lum > 0.6 ? "#111111" : "#FFFFFF");
   var meta = document.querySelector('meta[name="theme-color"]');
   if (meta) meta.setAttribute("content", BAR_OF[skin] || accent || DEFAULT_ACCENT[skin]);
 }
