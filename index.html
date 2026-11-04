@@ -13,7 +13,7 @@
 <title>FAV Places</title>
 <script>try { var s = localStorage.getItem("fav-places.skin") || "", a = localStorage.getItem("fav-places.accent." + (s || "classic"));
   if (s) document.documentElement.setAttribute("data-skin", s); if (a) document.documentElement.style.setProperty("--accent", a); } catch (e) {}</script>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Reem+Kufi:wght@500;700&family=Aref+Ruqaa:wght@400;700&family=Caveat:wght@600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap">
 <style>
 /* Layout: one narrow column you can use with a thumb. Command box on top,
    then the saved places as blue street-sign plates you tap to navigate. */
@@ -33,8 +33,8 @@
   --pin: #E9A400;
   --pin-ink: #2A1D00;
   --danger: #B3261E;
-  --font-display: "Reem Kufi", "Noto Kufi Arabic", "Segoe UI", Tahoma, sans-serif;
   --font-body: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, Arial, sans-serif;
+  --font-display: var(--font-body);
   --radius: 10px;
 }
 @media (prefers-color-scheme: dark) {
@@ -96,7 +96,7 @@
   --bg: #FFFFFF; --surface: #F4F6F8; --ink: #111418; --muted: #5F6670; --line: #E4E7EB;
   --sign: #FFFFFF; --sign-ink: #111418; --sign-sub: #5F6670; --sign-edge: #FFFFFF;
   --sign-soft: color-mix(in srgb, var(--accent) 10%, white);
-  --pin: #111418; --pin-ink: #FFFFFF; --danger: #C62828; --radius: 14px; --font-display: var(--font-body);
+  --pin: #111418; --pin-ink: #FFFFFF; --danger: #C62828; --radius: 14px;
 }
 :root[data-skin="minimal"] .plate { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.08); border-inline-start: 6px solid var(--accent); }
 :root[data-skin="minimal"] .row.best .plate { box-shadow: 0 0 0 2px var(--accent), 0 6px 16px rgba(0, 0, 0, 0.08); }
@@ -216,7 +216,6 @@
   --sign: transparent; --sign-ink: #2B2B2B; --sign-sub: #6E6A60; --sign-edge: transparent;
   --sign-soft: color-mix(in srgb, var(--accent) 10%, #FBF8EF);
   --pin: var(--accent); --pin-ink: #FFFFFF; --danger: #A93226; --radius: 4px;
-  --font-display: "Caveat", "Aref Ruqaa", cursive;
 }
 :root[data-skin="paper"] body {
   background-color: var(--bg);
@@ -233,11 +232,10 @@
 :root[data-skin="paper"] #list { gap: 0; }
 :root[data-skin="paper"] .plate { box-shadow: none; border-radius: 0; border-bottom: 2px dashed var(--line); padding: 10px 2px; }
 :root[data-skin="paper"] .row.best .plate { box-shadow: none; background: color-mix(in srgb, #FFE066 55%, transparent); }
-:root[data-skin="paper"] .plate-name { font-size: 1.75rem; line-height: 1.15; }
 :root[data-skin="paper"] .plate-go { color: var(--accent); }
 :root[data-skin="paper"] .row .share, :root[data-skin="paper"] .row .more { border: 0; color: var(--muted); }
 :root[data-skin="paper"] .btn.pin, :root[data-skin="paper"] #saveHere.dock { border-radius: 4px; box-shadow: 3px 3px 0 #2B2B2B; }
-:root[data-skin="paper"] .list-wrap h2 { font-family: var(--font-display); font-size: 1.5rem; color: var(--accent); }
+:root[data-skin="paper"] .list-wrap h2 { font-family: var(--font-display); font-size: 1.25rem; color: var(--accent); }
 
 /* Drive: black, huge names and buttons, easy to hit while driving */
 :root[data-skin="drive"] {
@@ -250,7 +248,7 @@
 :root[data-skin="drive"] .field .mic { width: 56px; height: 56px; top: 6px; background: var(--accent); color: var(--on-accent); }
 :root[data-skin="drive"] .plate { min-height: 108px; padding: 18px 16px; box-shadow: none; }
 :root[data-skin="drive"] .plate-icon { font-size: 2.5rem; }
-:root[data-skin="drive"] .plate-name { font-size: 1.875rem; font-weight: 800; line-height: 1.15; }
+:root[data-skin="drive"] .plate-name { font-size: 1.875rem; font-weight: 700; line-height: 1.15; }
 :root[data-skin="drive"] .plate-sub { font-size: 1.0625rem; font-weight: 600; opacity: 0.8; }
 :root[data-skin="drive"] .plate-go > span { display: none; }
 :root[data-skin="drive"] .plate-go svg { width: 40px; height: 40px; }
