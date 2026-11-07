@@ -292,14 +292,20 @@
 @keyframes sweep { to { transform: rotate(360deg); } }
 #radar .me { position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 60%, transparent); }
 #radar .north { position: absolute; left: 50%; top: 6px; transform: translateX(-50%); font-size: 0.75rem; font-weight: 700; color: var(--accent); }
-#radar a {
-  position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center;
-  text-decoration: none; color: var(--ink); font-size: 1.25rem; line-height: 1; z-index: 1;
+#radar .rdot {
+  position: absolute; transform: translate(-50%, -50%); z-index: 2;
+  width: 32px; height: 32px; display: grid; place-items: center;
+  font-size: 1.25rem; line-height: 1; text-decoration: none;
 }
-#radar a small {
-  margin-top: 2px; font-size: 0.6875rem; font-weight: 600; white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis;
-  background: rgba(0, 0, 0, 0.55); padding: 1px 5px; border-radius: 6px;
+#radar .rlabel {
+  position: absolute; z-index: 1; max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 0.6875rem; font-weight: 600; line-height: 1.5; text-decoration: none;
+  color: var(--ink); background: rgba(0, 0, 0, 0.6); padding: 0 5px; border-radius: 6px;
 }
+/* a name with no free room around its dot stays hidden. Tapping a dot shows its whole name;
+   tapping the name opens Google Maps */
+#radar .rlabel.tip { display: none; }
+#radar .rlabel.on { display: block; z-index: 3; max-width: none; background: var(--accent); color: var(--on-accent); }
 
 /* ---- Magazine: dark page, big colourful cards, the icon huge in the background of each card ---- */
 :root[data-skin="magazine"] {
@@ -1221,28 +1227,75 @@ $("locBtn").addEventListener("click", function () { locateHere(true); });
 setInterval(function () { if (here && !locBusy && Date.now() - here.at > 300000) setLocState("old"); }, 30000);
 /* Radar theme: you in the middle, north up; each place at its real direction,
    nearer places closer to the middle (log scale, so near and far both fit) */
+var radarOpen = null;
 function drawRadar(list) {
   var box = $("radar");
   if (!list || !here) { box.hidden = true; box.replaceChildren(); return; }
   var pts = list.filter(function (p) { return typeof p.lat === "number"; });
   box.replaceChildren();
+  box.hidden = false;
   box.appendChild(el("div", "sweep")); box.appendChild(el("div", "me")); box.appendChild(el("div", "north", "N"));
-  var r = Math.PI / 180, max = 0;
+  var S = box.clientWidth || 330, R = S / 2, r = Math.PI / 180, max = 0;
   var ds = pts.map(function (p) { var rk = roadKm(p), d = rk ? rk.km : distKm(p); if (d > max) max = d; return d; });
-  pts.forEach(function (p, i) {
+  var items = pts.map(function (p, i) {
     var y = Math.sin((p.lng - here.lng) * r) * Math.cos(p.lat * r);
     var x = Math.cos(here.lat * r) * Math.sin(p.lat * r) - Math.sin(here.lat * r) * Math.cos(p.lat * r) * Math.cos((p.lng - here.lng) * r);
-    var bearing = Math.atan2(y, x);
-    var f = 0.18 + 0.62 * (max > 0 ? Math.log(1 + ds[i]) / Math.log(1 + max) : 0);
-    var a = el("a"); a.href = dirUrl(p); a.target = "_blank"; a.rel = "noopener";
-    a.style.left = (50 + 50 * f * Math.sin(bearing)) + "%";
-    a.style.top = (50 - 50 * f * Math.cos(bearing)) + "%";
-    a.appendChild(document.createTextNode(placeIcon(p)));
-    a.appendChild(el("small", null, p.name));
-    a.addEventListener("click", function () { markUsed(p); });
-    box.appendChild(a);
+    var b = Math.atan2(y, x), f = 0.2 + 0.62 * (max > 0 ? Math.log(1 + ds[i]) / Math.log(1 + max) : 0);
+    return { p: p, d: ds[i], x: R + R * f * Math.sin(b), y: R - R * f * Math.cos(b) };
   });
-  box.hidden = false;
+  // places that land on top of each other are pushed apart until their icons don't touch
+  var GAP = 34, LIM = R * 0.86;
+  for (var it = 0; it < 120; it++) {
+    var moved = false;
+    for (var i = 0; i < items.length; i++) for (var j = i + 1; j < items.length; j++) {
+      var A = items[i], B = items[j], dx = B.x - A.x, dy = B.y - A.y, dd = Math.sqrt(dx * dx + dy * dy);
+      if (dd >= GAP) continue;
+      if (dd < 0.01) { dx = Math.cos(i + j); dy = Math.sin(i + j); dd = 1; }
+      var push = (GAP - dd) / 2 + 0.5;
+      A.x -= dx / dd * push; A.y -= dy / dd * push; B.x += dx / dd * push; B.y += dy / dd * push;
+      moved = true;
+    }
+    items.forEach(function (o) {
+      var vx = o.x - R, vy = o.y - R, len = Math.sqrt(vx * vx + vy * vy);
+      if (len > LIM) { o.x = R + vx / len * LIM; o.y = R + vy / len * LIM; }
+    });
+    if (!moved) break;
+  }
+  // names go where there is room (nearest places first); the rest show on the first tap
+  var taken = items.map(function (o) { return { l: o.x - 15, t: o.y - 15, r: o.x + 15, b: o.y + 15 }; });
+  taken.push({ l: R - 12, t: R - 12, r: R + 12, b: R + 12 });
+  function hits(q) {
+    if (q.l < 4 || q.t < 4 || q.r > S - 4 || q.b > S - 4) return true;
+    // every corner of the name must be inside the circle
+    if ([[q.l, q.t], [q.r, q.t], [q.l, q.b], [q.r, q.b]].some(function (c) { return Math.sqrt((c[0] - R) * (c[0] - R) + (c[1] - R) * (c[1] - R)) > R - 4; })) return true;
+    return taken.some(function (o) { return q.l < o.r && q.r > o.l && q.t < o.b && q.b > o.t; });
+  }
+  items.slice().sort(function (a, b) { return a.d - b.d; }).forEach(function (o) {
+    var dot = el("a", "rdot", placeIcon(o.p)), lbl = el("a", "rlabel", o.p.name);
+    [dot, lbl].forEach(function (x) { x.href = dirUrl(o.p); x.target = "_blank"; x.rel = "noopener"; });
+    dot.style.left = o.x + "px"; dot.style.top = o.y + "px";
+    box.appendChild(dot); box.appendChild(lbl);
+    var w = lbl.offsetWidth, h = lbl.offsetHeight, spot = null;
+    [[o.x - w / 2, o.y + 16], [o.x - w / 2, o.y - 16 - h], [o.x + 17, o.y - h / 2], [o.x - 17 - w, o.y - h / 2]].some(function (c) {
+      var q = { l: c[0], t: c[1], r: c[0] + w, b: c[1] + h };
+      if (hits(q)) return false;
+      spot = q; return true;
+    });
+    if (spot) taken.push(spot); else { lbl.classList.add("tip"); spot = { l: o.x - w / 2, t: o.y + 16 }; }
+    lbl.style.left = Math.max(2, Math.min(S - w - 2, spot.l)) + "px"; lbl.style.top = spot.t + "px";
+    // tapping the icon only shows the whole name; tapping the name opens Google Maps
+    dot.removeAttribute("href"); dot.setAttribute("role", "button");
+    function openName() {
+      box.querySelectorAll(".rlabel.on").forEach(function (x) { x.classList.remove("on"); });
+      lbl.classList.add("on");
+      var full = lbl.offsetWidth;
+      lbl.style.left = Math.max(2, Math.min(S - full - 2, o.x - full / 2)) + "px";
+      lbl.style.top = (o.y + 16 + lbl.offsetHeight > S - 2 ? o.y - 16 - lbl.offsetHeight : o.y + 16) + "px";
+    }
+    dot.addEventListener("click", function (e) { e.preventDefault(); radarOpen = o.p.id; openName(); });
+    lbl.addEventListener("click", function () { radarOpen = null; markUsed(o.p); });
+    if (radarOpen === o.p.id) openName();   // stays open when the page is drawn again
+  });
 }
 function distKm(p) {
   if (!here || typeof p.lat !== "number") return null;
