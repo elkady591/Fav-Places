@@ -76,40 +76,6 @@
    the colour picked under it (gear -> Color) replaces that default. "Classic" follows the
    phone's light/dark setting; the others keep their own look. */
 :root[data-skin] { color-scheme: light; }
-:root[data-skin="night"] {
-  --accent: #00D1FF; --glow: color-mix(in srgb, var(--accent) 65%, white);
-  --bg: #05070A; --surface: #0E131A; --ink: #E6F1FF; --muted: #8A97A8; --line: #1E2833;
-  --sign: #0B1118; --sign-ink: #E6F1FF; --sign-sub: var(--glow); --sign-edge: var(--glow);
-  --sign-soft: color-mix(in srgb, var(--accent) 16%, #0B1118);
-  --pin: var(--glow); --pin-ink: #001018; --danger: #FF7A7A; color-scheme: dark;
-}
-:root[data-skin="night"] .plate { box-shadow: inset 0 0 0 1.5px var(--sign-edge), 0 0 18px color-mix(in srgb, var(--glow) 25%, transparent); }
-:root[data-skin="sand"] {
-  --accent: #B5562B;
-  --bg: #F4ECDD; --surface: #FFF9EF; --ink: #3B2A1A; --muted: #7A6650; --line: #E2D3BC;
-  --sign: color-mix(in srgb, var(--accent) 10%, #EEE0C6); --sign-ink: #3B2A1A; --sign-sub: #7A6650;
-  --sign-edge: color-mix(in srgb, var(--accent) 45%, #E6D3B2); --sign-soft: color-mix(in srgb, var(--accent) 14%, #F4ECDD);
-  --pin: var(--accent); --pin-ink: #FFF7EE; --danger: #A33A20; --radius: 18px;
-}
-:root[data-skin="minimal"] {
-  --accent: #2563EB;
-  --bg: #FFFFFF; --surface: #F4F6F8; --ink: #111418; --muted: #5F6670; --line: #E4E7EB;
-  --sign: #FFFFFF; --sign-ink: #111418; --sign-sub: #5F6670; --sign-edge: #FFFFFF;
-  --sign-soft: color-mix(in srgb, var(--accent) 10%, white);
-  --pin: #111418; --pin-ink: #FFFFFF; --danger: #C62828; --radius: 14px;
-}
-:root[data-skin="minimal"] .plate { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 16px rgba(0, 0, 0, 0.08); border-inline-start: 6px solid var(--accent); }
-:root[data-skin="minimal"] .row.best .plate { box-shadow: 0 0 0 2px var(--accent), 0 6px 16px rgba(0, 0, 0, 0.08); }
-:root[data-skin="pop"] {
-  --accent: #F25C54;
-  --bg: #FFF8F0; --surface: #FFFFFF; --ink: #1F1A17; --muted: #6B625C; --line: #EADFD3;
-  --sign: var(--accent); --sign-ink: #FFFFFF; --sign-sub: #FFF1EE; --sign-edge: rgba(255, 255, 255, 0.5);
-  --sign-soft: color-mix(in srgb, var(--accent) 14%, white);
-  --pin: var(--accent); --pin-ink: #FFFFFF; --danger: #C62828; --radius: 22px;
-}
-:root[data-skin="pop"] #list > li:nth-child(4n+2) .plate { --sign: #1A9E92; }
-:root[data-skin="pop"] #list > li:nth-child(4n+3) .plate { --sign: #7357D1; }
-:root[data-skin="pop"] #list > li:nth-child(4n+4) .plate { --sign: #D9730D; }
 :root[data-skin="glass"] {
   --accent: #4F46E5;
   --bg: color-mix(in srgb, var(--accent) 45%, #120A2E); --surface: rgba(255, 255, 255, 0.14); --ink: #FFFFFF; --muted: rgba(255, 255, 255, 0.78); --line: rgba(255, 255, 255, 0.3);
@@ -167,95 +133,6 @@
 :root[data-skin="tiles"] .row .more { inset-inline-end: 12px; }
 :root[data-skin="tiles"] .row .share svg { width: 17px; height: 17px; }
 :root[data-skin="tiles"] .edit { margin-top: 10px; }
-/* ---- Four themes that change the whole page, not only the colours ---- */
-
-/* Grid: big square tiles, two per row, the icon large in the middle */
-:root[data-skin="grid"] {
-  --accent: #0F766E;
-  --bg: #F2F5F4; --surface: #FFFFFF; --ink: #10201D; --muted: #5C6B68; --line: #DCE4E2;
-  --sign: var(--accent); --sign-ink: var(--on-accent); --sign-sub: var(--on-accent); --sign-edge: transparent;
-  --sign-soft: color-mix(in srgb, var(--accent) 12%, white);
-  --pin: var(--accent); --pin-ink: var(--on-accent); --danger: #C62828; --radius: 24px;
-}
-:root[data-skin="grid"] .top { flex-direction: column; align-items: stretch; gap: 10px; }
-:root[data-skin="grid"] .top h1 { font-size: 2rem; text-align: center; }
-:root[data-skin="grid"] .top-end { justify-content: center; }
-:root[data-skin="grid"] #list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-:root[data-skin="grid"] .row { position: relative; display: block; }
-:root[data-skin="grid"] .row:has(.edit) { grid-column: 1 / -1; }
-:root[data-skin="grid"] .plate {
-  flex-direction: column; justify-content: center; text-align: center; gap: 8px;
-  aspect-ratio: 1 / 1; padding: 12px 10px 46px;
-  box-shadow: 0 10px 22px color-mix(in srgb, var(--accent) 28%, transparent);
-}
-:root[data-skin="grid"] .row:has(.edit) .plate { aspect-ratio: auto; min-height: 150px; }
-:root[data-skin="grid"] #list > li:nth-child(3n+2) .plate { --sign: color-mix(in srgb, var(--accent) 78%, #0B1220); }
-:root[data-skin="grid"] #list > li:nth-child(3n+3) .plate { --sign: color-mix(in srgb, var(--accent) 82%, #F59E0B); }
-:root[data-skin="grid"] .plate-icon {
-  font-size: 2.5rem; width: 74px; height: 74px; display: grid; place-items: center;
-  border-radius: 50%; background: rgba(255, 255, 255, 0.22);
-}
-:root[data-skin="grid"] .plate-text { flex: none; width: 100%; align-items: center; }
-:root[data-skin="grid"] .plate-name { font-size: 1.0625rem; line-height: 1.25; }
-:root[data-skin="grid"] .plate-sub { opacity: 0.85; }
-:root[data-skin="grid"] .plate-go { display: none; }
-:root[data-skin="grid"] .row .share, :root[data-skin="grid"] .row .more {
-  position: absolute; bottom: 10px; width: 32px; height: 32px;
-  background: rgba(255, 255, 255, 0.25); color: var(--on-accent); border: 0; border-radius: 50%; font-size: 1rem;
-}
-:root[data-skin="grid"] .row .share { inset-inline-start: calc(50% - 36px); }
-:root[data-skin="grid"] .row .more { inset-inline-start: calc(50% + 4px); }
-:root[data-skin="grid"] .row:has(.edit) .share, :root[data-skin="grid"] .row:has(.edit) .more { top: 10px; bottom: auto; }
-:root[data-skin="grid"] .row .share svg { width: 16px; height: 16px; }
-:root[data-skin="grid"] .edit { margin-top: 10px; }
-
-/* Paper: a lined notebook page, handwritten names, no boxes */
-:root[data-skin="paper"] {
-  --accent: #C0392B;
-  --bg: #FBF8EF; --surface: #FFFDF6; --ink: #2B2B2B; --muted: #6E6A60; --line: #D8D2C2;
-  --sign: transparent; --sign-ink: #2B2B2B; --sign-sub: #6E6A60; --sign-edge: transparent;
-  --sign-soft: color-mix(in srgb, var(--accent) 10%, #FBF8EF);
-  --pin: var(--accent); --pin-ink: #FFFFFF; --danger: #A93226; --radius: 4px;
-}
-:root[data-skin="paper"] body {
-  background-color: var(--bg);
-  background-image: repeating-linear-gradient(to bottom, transparent 0 35px, #D6E1EF 35px 36px);
-}
-:root[data-skin="paper"] .top { border-bottom: 2px solid color-mix(in srgb, var(--accent) 55%, transparent); padding-bottom: 8px; }
-:root[data-skin="paper"] .top h1 { font-size: clamp(1.25rem, 6vw, 1.625rem); }
-:root[data-skin="paper"] .lang, :root[data-skin="paper"] .more, :root[data-skin="paper"] .share {
-  background: transparent; border: 1.5px solid var(--ink); border-radius: 4px; color: var(--ink);
-}
-:root[data-skin="paper"] .lang[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
-:root[data-skin="paper"] .field input { background: transparent; border: 0; border-bottom: 2px solid var(--ink); border-radius: 0; }
-:root[data-skin="paper"] .mic { background: transparent; border: 1.5px solid var(--ink); border-radius: 4px; }
-:root[data-skin="paper"] #list { gap: 0; }
-:root[data-skin="paper"] .plate { box-shadow: none; border-radius: 0; border-bottom: 2px dashed var(--line); padding: 10px 2px; }
-:root[data-skin="paper"] .row.best .plate { box-shadow: none; background: color-mix(in srgb, #FFE066 55%, transparent); }
-:root[data-skin="paper"] .plate-go { color: var(--accent); }
-:root[data-skin="paper"] .row .share, :root[data-skin="paper"] .row .more { border: 0; color: var(--muted); }
-:root[data-skin="paper"] .btn.pin, :root[data-skin="paper"] #saveHere.dock { border-radius: 4px; box-shadow: 3px 3px 0 #2B2B2B; }
-:root[data-skin="paper"] .list-wrap h2 { font-family: var(--font-display); font-size: 1.25rem; color: var(--accent); }
-
-/* Drive: black, huge names and buttons, easy to hit while driving */
-:root[data-skin="drive"] {
-  --accent: #FACC15; --on-accent: #111111;
-  --bg: #000000; --surface: #121212; --ink: #FFFFFF; --muted: #BDBDBD; --line: #333333;
-  --sign: var(--accent); --sign-ink: var(--on-accent); --sign-sub: var(--on-accent); --sign-edge: transparent; --sign-soft: #222222;
-  --pin: var(--accent); --pin-ink: var(--on-accent); --danger: #FF6B6B; --radius: 18px; color-scheme: dark;
-}
-:root[data-skin="drive"] .field input { height: 68px; font-size: 1.375rem; }
-:root[data-skin="drive"] .field .mic { width: 56px; height: 56px; top: 6px; background: var(--accent); color: var(--on-accent); }
-:root[data-skin="drive"] .plate { min-height: 108px; padding: 18px 16px; box-shadow: none; }
-:root[data-skin="drive"] .plate-icon { font-size: 2.5rem; }
-:root[data-skin="drive"] .plate-name { font-size: 1.875rem; font-weight: 700; line-height: 1.15; }
-:root[data-skin="drive"] .plate-sub { font-size: 1.0625rem; font-weight: 600; opacity: 0.8; }
-:root[data-skin="drive"] .plate-go > span { display: none; }
-:root[data-skin="drive"] .plate-go svg { width: 40px; height: 40px; }
-:root[data-skin="drive"] .plate { flex-basis: 100%; }
-:root[data-skin="drive"] .row .share, :root[data-skin="drive"] .row .more { flex: 1 1 0; width: auto; height: 52px; background: #1C1C1C; border-color: #333; color: #FFFFFF; font-size: 1.5rem; }
-:root[data-skin="drive"] .list-wrap h2 { font-size: 1.0625rem; color: var(--accent); }
-:root[data-skin="drive"] #saveHere.dock { min-height: 64px; font-size: 1.25rem; }
 
 /* Map: a map in the background, places as white callouts with a map pin */
 :root[data-skin="map"] {
@@ -292,13 +169,169 @@
 :root[data-skin="map"] .plate-go { color: var(--accent); }
 :root[data-skin="map"] .row .share, :root[data-skin="map"] .row .more { border: 0; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12); }
 :root[data-skin="map"] .field input { border: 0; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12); }
+
+/* ---- Soft: everything looks pressed out of the same soft grey surface ---- */
+:root[data-skin="soft"] {
+  --accent: #6C63FF;
+  --bg: #E6E9EF; --surface: #E6E9EF; --ink: #2D3142; --muted: #6B7080; --line: transparent;
+  --sign: #E6E9EF; --sign-ink: #2D3142; --sign-sub: var(--accent); --sign-edge: transparent; --sign-soft: #E6E9EF;
+  --pin: var(--accent); --pin-ink: var(--on-accent); --danger: #C62828; --radius: 22px;
+  --lo: #BEC4D0; --hi: #FFFFFF;
+}
+:root[data-skin="soft"] .plate { box-shadow: 8px 8px 16px var(--lo), -8px -8px 16px var(--hi); }
+:root[data-skin="soft"] .row.best .plate { box-shadow: 0 0 0 2px var(--accent), 8px 8px 16px var(--lo), -8px -8px 16px var(--hi); }
+:root[data-skin="soft"] .plate-icon {
+  width: 50px; height: 50px; display: grid; place-items: center; font-size: 1.5rem; border-radius: 16px;
+  box-shadow: inset 4px 4px 8px var(--lo), inset -4px -4px 8px var(--hi);
+}
+:root[data-skin="soft"] .plate-sub { font-weight: 600; }
+:root[data-skin="soft"] .row > .share, :root[data-skin="soft"] .row > .more {
+  background: var(--bg); color: var(--accent); box-shadow: 4px 4px 8px var(--lo), -4px -4px 8px var(--hi);
+}
+:root[data-skin="soft"] .lang { border: 0; background: var(--bg); box-shadow: 4px 4px 8px var(--lo), -4px -4px 8px var(--hi); }
+:root[data-skin="soft"] .lang[aria-pressed="true"] { color: var(--accent); background: var(--bg); box-shadow: inset 4px 4px 8px var(--lo), inset -4px -4px 8px var(--hi); }
+:root[data-skin="soft"] .field input, :root[data-skin="soft"] .text-input {
+  border: 0; background: var(--bg); box-shadow: inset 5px 5px 10px var(--lo), inset -5px -5px 10px var(--hi);
+}
+:root[data-skin="soft"] .mic { background: var(--bg); color: var(--accent); box-shadow: 3px 3px 6px var(--lo), -3px -3px 6px var(--hi); }
+:root[data-skin="soft"] .chip, :root[data-skin="soft"] .btn.ghost { border: 0; background: var(--bg); box-shadow: 4px 4px 8px var(--lo), -4px -4px 8px var(--hi); }
+:root[data-skin="soft"] #saveHere.dock { box-shadow: 6px 6px 14px var(--lo), -6px -6px 14px var(--hi); }
+
+/* ---- Cartoon: thick black outlines, flat shadows, bright cards, a little tilted ---- */
+:root[data-skin="cartoon"] {
+  --accent: #FFD23F;
+  --bg: #FFF4E0; --surface: #FFFFFF; --ink: #111111; --muted: #333333; --line: #111111;
+  --sign: var(--accent); --sign-ink: var(--on-accent); --sign-sub: var(--on-accent); --sign-edge: transparent; --sign-soft: #FFFFFF;
+  --pin: var(--accent); --pin-ink: var(--on-accent); --danger: #D62828; --radius: 16px;
+}
+:root[data-skin="cartoon"] .top h1 { font-weight: 900; text-shadow: 2px 2px 0 var(--accent); }
+:root[data-skin="cartoon"] .plate { border: 3px solid #111111; box-shadow: 5px 5px 0 #111111; }
+:root[data-skin="cartoon"] .row.best .plate { box-shadow: 5px 5px 0 #111111, 0 0 0 4px var(--bg), 0 0 0 7px #111111; }
+:root[data-skin="cartoon"] #list { gap: 14px; }
+:root[data-skin="cartoon"] #list > li:nth-child(odd) { transform: rotate(-0.6deg); }
+:root[data-skin="cartoon"] #list > li:nth-child(even) { transform: rotate(0.6deg); }
+:root[data-skin="cartoon"] #list > li:nth-child(4n+2) .plate { --sign: #9EE6CF; --sign-ink: #111111; --sign-sub: #111111; }
+:root[data-skin="cartoon"] #list > li:nth-child(4n+3) .plate { --sign: #FFB5C2; --sign-ink: #111111; --sign-sub: #111111; }
+:root[data-skin="cartoon"] #list > li:nth-child(4n+4) .plate { --sign: #B8C0FF; --sign-ink: #111111; --sign-sub: #111111; }
+:root[data-skin="cartoon"] .plate-icon {
+  width: 50px; height: 50px; display: grid; place-items: center; font-size: 1.5rem;
+  background: #FFFFFF; border: 3px solid #111111; border-radius: 50%;
+}
+:root[data-skin="cartoon"] .plate-name { font-weight: 900; }
+:root[data-skin="cartoon"] .row > .share, :root[data-skin="cartoon"] .row > .more {
+  background: #FFFFFF; color: #111111; border: 2.5px solid #111111; box-shadow: 2px 2px 0 #111111;
+}
+:root[data-skin="cartoon"] .lang, :root[data-skin="cartoon"] .field input, :root[data-skin="cartoon"] .chip,
+:root[data-skin="cartoon"] .btn, :root[data-skin="cartoon"] .text-input { border: 3px solid #111111; box-shadow: 3px 3px 0 #111111; }
+:root[data-skin="cartoon"] .lang[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); }
+:root[data-skin="cartoon"] .mic { border: 2.5px solid #111111; }
+
+/* ---- Hero: the first place is one big card, the rest are small cards two per row ---- */
+:root[data-skin="hero"] {
+  --accent: #0F766E;
+  --bg: #F3F6F8; --surface: #FFFFFF; --ink: #10201D; --muted: #5C6B68; --line: #DDE3E8;
+  --sign: var(--accent); --sign-ink: var(--on-accent); --sign-sub: var(--on-accent); --sign-edge: transparent;
+  --sign-soft: color-mix(in srgb, var(--accent) 12%, white);
+  --pin: var(--accent); --pin-ink: var(--on-accent); --danger: #C62828; --radius: 20px;
+}
+:root[data-skin="hero"] #list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+:root[data-skin="hero"] #list > li:first-child, :root[data-skin="hero"] #list > li:has(.edit) { grid-column: 1 / -1; }
+:root[data-skin="hero"] #list > li:first-child .plate {
+  flex-direction: column; align-items: flex-start; justify-content: flex-end; gap: 6px;
+  min-height: 176px; padding: 18px;
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 55%, #000));
+  box-shadow: 0 12px 26px color-mix(in srgb, var(--accent) 35%, transparent);
+}
+:root[data-skin="hero"] #list > li:first-child .plate-icon { font-size: 3rem; }
+:root[data-skin="hero"] #list > li:first-child .plate-name { font-size: 1.75rem; }
+:root[data-skin="hero"] #list > li:first-child .plate-sub { font-size: 1.0625rem; font-weight: 700; opacity: 0.9; }
+:root[data-skin="hero"] #list > li:first-child > .share, :root[data-skin="hero"] #list > li:first-child > .more { align-self: start !important; margin-top: 16px; }
+:root[data-skin="hero"] #list > li:not(:first-child) .plate {
+  flex-direction: column; align-items: flex-start; gap: 6px; min-height: 120px;
+  padding: 50px 12px 12px !important; background: var(--surface); color: var(--ink);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04), 0 8px 18px rgba(0, 0, 0, 0.07);
+}
+:root[data-skin="hero"] #list > li:not(:first-child) .plate-icon { position: absolute; top: 12px; inset-inline-start: 12px; font-size: 1.625rem; }
+:root[data-skin="hero"] #list > li:not(:first-child) .plate-name { font-size: 1rem; }
+:root[data-skin="hero"] #list > li:not(:first-child) .plate-sub { color: var(--muted); }
+:root[data-skin="hero"] #list > li:not(:first-child) > .share, :root[data-skin="hero"] #list > li:not(:first-child) > .more {
+  align-self: start !important; margin-top: 10px; width: 32px !important; height: 32px !important;
+  background: var(--sign-soft); color: var(--accent);
+}
+:root[data-skin="hero"] #list > li:not(:first-child) > .more { margin-inline-end: 10px !important; }
+:root[data-skin="hero"] #list > li:not(:first-child) > .share { margin-inline-end: 6px !important; }
+:root[data-skin="hero"] .row.best .plate { box-shadow: 0 0 0 3px var(--accent) !important; }
+
+/* ---- Radar: a radar screen with you in the middle and each place where it really is
+   (north up, nearer = closer to the middle). Tap a dot to go. The list stays below. ---- */
+:root[data-skin="radar"] {
+  --accent: #22C55E;
+  --bg: #0B1A14; --surface: #12261D; --ink: #D9FBE8; --muted: #7FB89A; --line: #1F3A2D;
+  --sign: var(--accent); --sign-ink: var(--on-accent); --sign-sub: var(--accent); --sign-edge: transparent;
+  --sign-soft: color-mix(in srgb, var(--accent) 14%, #12261D);
+  --pin: var(--accent); --pin-ink: var(--on-accent); --danger: #FF7A7A; --radius: 14px; color-scheme: dark;
+}
+:root[data-skin="radar"] .plate { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 1px var(--line); }
+:root[data-skin="radar"] .row.best .plate { box-shadow: inset 0 0 0 2px var(--accent); }
+:root[data-skin="radar"] .row > .share, :root[data-skin="radar"] .row > .more { background: #1A3327; color: var(--ink); }
+#radar { display: none; }
+:root[data-skin="radar"] #radar:not([hidden]) {
+  display: block; position: relative; width: min(100%, 330px); aspect-ratio: 1 / 1; margin: 4px auto 14px;
+  border-radius: 50%; overflow: hidden; border: 2px solid color-mix(in srgb, var(--accent) 55%, transparent);
+  background:
+    linear-gradient(color-mix(in srgb, var(--accent) 22%, transparent), color-mix(in srgb, var(--accent) 22%, transparent)) center / 1px 100% no-repeat,
+    linear-gradient(color-mix(in srgb, var(--accent) 22%, transparent), color-mix(in srgb, var(--accent) 22%, transparent)) center / 100% 1px no-repeat,
+    repeating-radial-gradient(circle, transparent 0 calc(25% - 1px), color-mix(in srgb, var(--accent) 30%, transparent) calc(25% - 1px) 25%),
+    radial-gradient(circle, color-mix(in srgb, var(--accent) 14%, #0B1A14), #071510);
+}
+#radar .sweep {
+  position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(from 0deg, color-mix(in srgb, var(--accent) 45%, transparent), transparent 70deg);
+}
+@media (prefers-reduced-motion: no-preference) { #radar .sweep { animation: sweep 4s linear infinite; } }
+@keyframes sweep { to { transform: rotate(360deg); } }
+#radar .me { position: absolute; left: 50%; top: 50%; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 60%, transparent); }
+#radar .north { position: absolute; left: 50%; top: 6px; transform: translateX(-50%); font-size: 0.75rem; font-weight: 700; color: var(--accent); }
+#radar a {
+  position: absolute; transform: translate(-50%, -50%); display: flex; flex-direction: column; align-items: center;
+  text-decoration: none; color: var(--ink); font-size: 1.25rem; line-height: 1; z-index: 1;
+}
+#radar a small {
+  margin-top: 2px; font-size: 0.6875rem; font-weight: 600; white-space: nowrap; max-width: 90px; overflow: hidden; text-overflow: ellipsis;
+  background: rgba(0, 0, 0, 0.55); padding: 1px 5px; border-radius: 6px;
+}
+
+/* ---- Magazine: dark page, big colourful cards, the icon huge in the background of each card ---- */
+:root[data-skin="magazine"] {
+  --accent: #FF2D55;
+  --bg: #0F0F12; --surface: #1A1A20; --ink: #F5F5F7; --muted: #9A9AA5; --line: #2A2A33;
+  --sign: var(--accent); --sign-ink: #FFFFFF; --sign-sub: rgba(255, 255, 255, 0.82); --sign-edge: transparent;
+  --sign-soft: #26262E; --pin: var(--accent); --pin-ink: #FFFFFF; --danger: #FF6B6B; --radius: 22px; color-scheme: dark;
+}
+:root[data-skin="magazine"] .top h1 { font-weight: 900; }
+:root[data-skin="magazine"] .plate {
+  position: relative; overflow: hidden; min-height: 112px; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 45%, #000));
+}
+:root[data-skin="magazine"] #list > li:nth-child(4n+2) .plate { background: linear-gradient(135deg, #FF512F, #DD2476); }
+:root[data-skin="magazine"] #list > li:nth-child(4n+3) .plate { background: linear-gradient(135deg, #0F9B8E, #1F5F4A); }
+:root[data-skin="magazine"] #list > li:nth-child(4n+4) .plate { background: linear-gradient(135deg, #8E2DE2, #4A00E0); }
+:root[data-skin="magazine"] .row.best .plate { box-shadow: 0 0 0 3px #FFFFFF, 0 10px 24px rgba(0, 0, 0, 0.35); }
+:root[data-skin="magazine"] .plate-icon {
+  position: absolute; inset-inline-end: 96px; top: 50%; transform: translateY(-50%) rotate(-12deg);
+  font-size: 4.75rem; opacity: 0.35; pointer-events: none;
+}
+:root[data-skin="magazine"] .plate-text { position: relative; }
+:root[data-skin="magazine"] .plate-name { font-size: 1.625rem; font-weight: 900; line-height: 1.1; }
+:root[data-skin="magazine"] .plate-sub { font-size: 0.9375rem; font-weight: 600; }
+
 /* where the theme's sign colour is too pale for a button or a selected chip, use its button colour */
-:root[data-skin="minimal"] .btn.sign { background: var(--accent); color: #FFFFFF; }
-:root[data-skin="night"] .btn.sign { box-shadow: inset 0 0 0 1.5px var(--sign-edge); }
-:root[data-skin="minimal"] .lang[aria-pressed="true"], :root[data-skin="minimal"] .chip[aria-pressed="true"],
-:root[data-skin="night"] .lang[aria-pressed="true"], :root[data-skin="night"] .chip[aria-pressed="true"],
-:root[data-skin="sand"] .lang[aria-pressed="true"], :root[data-skin="sand"] .chip[aria-pressed="true"] {
+
+:root[data-skin="soft"] .chip[aria-pressed="true"] {
   background: var(--pin); color: var(--pin-ink); border-color: var(--pin);
+}
+:root[data-skin="soft"] .btn.sign {
+  background: var(--accent); color: var(--on-accent);
 }
 
 * { box-sizing: border-box; }
@@ -353,7 +386,7 @@ button, input { font: inherit; color: inherit; }
 .stack { display: flex; flex-direction: column; gap: 20px; }
 #backBtn { align-self: flex-start; }
 html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
-.top h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.25rem, 5.4vw, 1.75rem); line-height: 1.2; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.top h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.0625rem, 5vw, 1.75rem); line-height: 1.2; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .count { color: var(--muted); font-size: 0.875rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 /* Command box */
@@ -498,19 +531,7 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
 .row > .share svg { width: 17px; height: 17px; }
 .row > .edit { grid-row: 2; grid-column: 1 / -1; }
 .row .plate-go { display: none !important; }
-/* drive: the names are huge, so the two big buttons stand one over the other at the card's end */
-:root[data-skin="drive"] .row { grid-template-columns: minmax(0, 1fr) auto; }
-:root[data-skin="drive"] .row > .plate { padding-inline-end: 76px !important; min-height: 120px; }
-:root[data-skin="drive"] .row > .share, :root[data-skin="drive"] .row > .more { grid-column: 2; width: 46px !important; height: 46px !important; margin-inline-end: 14px !important; }
-:root[data-skin="drive"] .row > .share { align-self: start !important; margin-top: 10px !important; }
-:root[data-skin="drive"] .row > .more { align-self: end !important; margin-bottom: 10px !important; }
 :root[data-skin="tiles"] .row > .share, :root[data-skin="tiles"] .row > .more { color: var(--ink); }
-:root[data-skin="drive"] .row > .share svg { width: 24px; height: 24px; }
-:root[data-skin="grid"] #list { grid-template-columns: minmax(0, 1fr) !important; }
-:root[data-skin="grid"] .row > .plate { flex-direction: row; text-align: start; aspect-ratio: auto !important; min-height: 104px; padding-block: 14px !important; padding-inline-start: 14px !important; }
-:root[data-skin="grid"] .row .plate-icon { width: 64px; height: 64px; font-size: 2rem; }
-:root[data-skin="grid"] .row .plate-text { flex: 1; width: auto; align-items: flex-start; }
-:root[data-skin="grid"] .row > .share, :root[data-skin="grid"] .row > .more { background: rgba(255, 255, 255, 0.25); color: var(--on-accent); }
 .chip[aria-pressed="true"] { background: var(--sign); color: var(--sign-ink); border-color: var(--sign); }
 .allbar { display: flex; flex-direction: column; gap: 10px; }
 .icons { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -696,6 +717,7 @@ html[dir="ltr"] .plate-go svg { transform: scaleX(-1); }
         <button id="sortNear" class="chip" type="button" aria-pressed="false">الأقرب ليا</button>
       </div>
     </div>
+    <div id="radar" aria-hidden="true" hidden></div>
     <ul id="list"></ul>
     <div id="empty" class="empty">
       <strong id="emptyTitle">بنجيب أماكنك المسجّلة…</strong>
@@ -807,16 +829,14 @@ var EN = {
   "مرجاني": "Coral",
   "برتقالي": "Orange",
   "أزرق كلاسيك": "Classic blue",
-  "ليلي": "Night",
-  "رملي": "Sand",
-  "أبيض بسيط": "Minimal",
-  "ألوان": "Colors",
   "زجاج": "Glass",
   "مودرن": "Modern",
-  "شبكة": "Grid",
-  "ورق": "Paper",
-  "سواقة": "Drive",
   "خريطة": "Map",
+  "ناعم": "Soft",
+  "كرتون": "Cartoon",
+  "لوحة": "Hero",
+  "رادار": "Radar",
+  "مجلة": "Magazine",
   "الإضاءة": "Brightness",
   "تلقائي": "Auto",
   "فاتح": "Light",
@@ -1199,6 +1219,31 @@ function setLocState(s) { $("locBtn").setAttribute("data-state", s); }
 $("locBtn").addEventListener("click", function () { locateHere(true); });
 // a location older than 5 minutes is shown as not fresh
 setInterval(function () { if (here && !locBusy && Date.now() - here.at > 300000) setLocState("old"); }, 30000);
+/* Radar theme: you in the middle, north up; each place at its real direction,
+   nearer places closer to the middle (log scale, so near and far both fit) */
+function drawRadar(list) {
+  var box = $("radar");
+  if (!list || !here) { box.hidden = true; box.replaceChildren(); return; }
+  var pts = list.filter(function (p) { return typeof p.lat === "number"; });
+  box.replaceChildren();
+  box.appendChild(el("div", "sweep")); box.appendChild(el("div", "me")); box.appendChild(el("div", "north", "N"));
+  var r = Math.PI / 180, max = 0;
+  var ds = pts.map(function (p) { var rk = roadKm(p), d = rk ? rk.km : distKm(p); if (d > max) max = d; return d; });
+  pts.forEach(function (p, i) {
+    var y = Math.sin((p.lng - here.lng) * r) * Math.cos(p.lat * r);
+    var x = Math.cos(here.lat * r) * Math.sin(p.lat * r) - Math.sin(here.lat * r) * Math.cos(p.lat * r) * Math.cos((p.lng - here.lng) * r);
+    var bearing = Math.atan2(y, x);
+    var f = 0.18 + 0.62 * (max > 0 ? Math.log(1 + ds[i]) / Math.log(1 + max) : 0);
+    var a = el("a"); a.href = dirUrl(p); a.target = "_blank"; a.rel = "noopener";
+    a.style.left = (50 + 50 * f * Math.sin(bearing)) + "%";
+    a.style.top = (50 - 50 * f * Math.cos(bearing)) + "%";
+    a.appendChild(document.createTextNode(placeIcon(p)));
+    a.appendChild(el("small", null, p.name));
+    a.addEventListener("click", function () { markUsed(p); });
+    box.appendChild(a);
+  });
+  box.hidden = false;
+}
 function distKm(p) {
   if (!here || typeof p.lat !== "number") return null;
   var r = Math.PI / 180, dLat = (p.lat - here.lat) * r, dLng = (p.lng - here.lng) * r;
@@ -1395,6 +1440,7 @@ function render() {
   listEl.replaceChildren();
   shown.forEach(function (p, i) { listEl.appendChild(rowEl(p, searching && i === 0)); });
   queueRoads((all && allSort === "near") || (!all && !searching && homeSort === "near") ? places : shown);
+  drawRadar(!all && !searching && document.documentElement.getAttribute("data-skin") === "radar" ? shown : null);
   $("listTitle").textContent = all ? L("كل الأماكن المسجّلة") + (places.length ? " · " + countLabel(places.length) : "") : searching ? L("نتيجة البحث") :
     L(homeSort === "near" && here ? "الأقرب ليك" : homeSort === "most" ? "الأكتر استخدام" : "آخر الأماكن");
 
@@ -1601,20 +1647,17 @@ $("sortNear").addEventListener("click", function () { allSort = "near"; hereAt =
    (background, first sign, second sign, button, sign border) */
 var SKIN_LIST = [
   ["", "أزرق كلاسيك", "#EDF0F3", "#14549F", "#14549F", "#E9A400", ""],
-  ["night", "ليلي", "#05070A", "#0B1118", "#0B1118", "#00D1FF", "#00D1FF"],
-  ["sand", "رملي", "#F4ECDD", "#EBDCC2", "#EBDCC2", "#B5562B", "#C8A878"],
-  ["minimal", "أبيض بسيط", "#FFFFFF", "#FFFFFF", "#FFFFFF", "#111418", "#E4E7EB"],
-  ["pop", "ألوان", "#FFF8F0", "#F25C54", "#1A9E92", "#7357D1", ""],
   ["glass", "زجاج", "linear-gradient(165deg, #3A1C71, #4F46E5 55%, #0EA5E9)", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.3)", "#FDE047", "rgba(255,255,255,0.5)"],
   ["tiles", "مودرن", "linear-gradient(180deg, #FF7A59 0 34%, #F7F5F2 34%)", "#FFFFFF", "#FFFFFF", "#FF5A5F", "#ECE7E1"],
-  ["grid", "شبكة", "#F2F5F4", "#0F766E", "#0F766E", "#0F766E", ""],
-  ["paper", "ورق", "repeating-linear-gradient(to bottom, #FBF8EF 0 9px, #D6E1EF 9px 10px)", "#FFFDF6", "#FFFDF6", "#C0392B", "#2B2B2B"],
-  ["drive", "سواقة", "#000000", "#FACC15", "#FACC15", "#FACC15", ""],
-  ["map", "خريطة", "linear-gradient(28deg, #E8EEE3 46%, #FFFFFF 46% 52%, #E8EEE3 52%)", "#FFFFFF", "#FFFFFF", "#E11D48", "#CFD8C8"]
+  ["map", "خريطة", "linear-gradient(28deg, #E8EEE3 46%, #FFFFFF 46% 52%, #E8EEE3 52%)", "#FFFFFF", "#FFFFFF", "#E11D48", "#CFD8C8"],
+  ["soft", "ناعم", "#E6E9EF", "#E6E9EF", "#E6E9EF", "#6C63FF", "#FFFFFF"],
+  ["cartoon", "كرتون", "#FFF4E0", "#FFD23F", "#9EE6CF", "#111111", "#111111"],
+  ["hero", "لوحة", "#F3F6F8", "#0F766E", "#FFFFFF", "#0F766E", "#DDE3E8"],
+  ["radar", "رادار", "radial-gradient(circle, #12261D 0 28%, #22C55E 29% 31%, #0B1A14 32% 58%, #22C55E 59% 61%, #0B1A14 62%)", "rgba(0,0,0,0)", "rgba(0,0,0,0)", "#22C55E", ""],
+  ["magazine", "مجلة", "#0F0F12", "#FF2D55", "#8E2DE2", "#FF2D55", ""]
 ];
-var DEFAULT_ACCENT = { "": "#14549F", night: "#00D1FF", sand: "#B5562B", minimal: "#2563EB", pop: "#F25C54", glass: "#4F46E5", tiles: "#FF5A5F",
-  grid: "#0F766E", paper: "#C0392B", drive: "#FACC15", map: "#E11D48" };
-var BAR_OF = { night: "#05070A", sand: "#F4ECDD", minimal: "#FFFFFF", paper: "#FBF8EF", drive: "#000000", map: "#E8EEE3" };   // the rest colour the phone's top bar with the theme colour
+var DEFAULT_ACCENT = { "": "#14549F", glass: "#4F46E5", tiles: "#FF5A5F", map: "#E11D48", soft: "#6C63FF", cartoon: "#FFD23F", hero: "#0F766E", radar: "#22C55E", magazine: "#FF2D55" };
+var BAR_OF = { map: "#E8EEE3", soft: "#E6E9EF", cartoon: "#FFF4E0", hero: "#F3F6F8", radar: "#0B1A14", magazine: "#0F0F12" };   // the rest colour the phone's top bar with the theme colour
 var COLORS = [["#14549F", "أزرق"], ["#2563EB", "سماوي"], ["#0F766E", "تركواز"], ["#1E6B3A", "أخضر"], ["#6D28D9", "بنفسجي"],
   ["#BE185D", "وردي"], ["#FF5A5F", "مرجاني"], ["#C2410C", "برتقالي"], ["#334155", "رمادي"]];
 function accentKey(skin) { return "fav-places.accent." + (skin || "classic"); }
@@ -1648,7 +1691,7 @@ function buildLooks() {
     });
     var btn = el("i"); btn.style.background = s[5]; sw.appendChild(btn);
     b.appendChild(sw); b.appendChild(el("span", null, L(s[1])));
-    b.addEventListener("click", function () { setPref("fav-places.skin", s[0]); applyLook(); buildLooks(); });
+    b.addEventListener("click", function () { setPref("fav-places.skin", s[0]); applyLook(); buildLooks(); render(); });
     $("skinList").appendChild(b);
   });
   // the colours for the chosen theme; "A" keeps the theme's own colour
